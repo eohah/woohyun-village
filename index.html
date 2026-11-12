@@ -40,6 +40,33 @@ table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px 4px;b
 <section id="stage" class="card hide"></section>
 </main>
 <script>
+/* ===== 순위표(Firebase) 설정 =====
+   Firebase 콘솔에서 만든 웹 앱 설정을 아래 null 대신 붙여넣으세요. 예:
+   const FIREBASE_CONFIG={apiKey:"...",authDomain:"...",projectId:"...",appId:"..."};
+   설정이 없으면 게임은 되지만 순위표는 표시되지 않아요. */
+const FIREBASE_CONFIG={
+  apiKey:"AIzaSyBfhNUkim39UOLkmjeVK3uH3waja61vzQY",
+  authDomain:"woohyungame.firebaseapp.com",
+  projectId:"woohyungame",
+  storageBucket:"woohyungame.firebasestorage.app",
+  messagingSenderId:"91800571562",
+  appId:"1:91800571562:web:4d215e900838c6c74a4ad3"
+};
+async function fbInit(){
+  if(!FIREBASE_CONFIG)return null;
+  const load=src=>new Promise((res,rej)=>{const e=document.createElement("script");e.src=src;e.onload=res;e.onerror=rej;document.head.appendChild(e)});
+  const B="https://www.gstatic.com/firebasejs/10.12.2/";
+  await load(B+"firebase-app-compat.js");
+  await Promise.all([load(B+"firebase-auth-compat.js"),load(B+"firebase-firestore-compat.js")]);
+  firebase.initializeApp(FIREBASE_CONFIG);
+  const cred=await firebase.auth().signInAnonymously();
+  const fs=firebase.firestore(),col=n=>fs.collection(n);
+  const dbx={
+    doc:p=>({set:d=>fs.doc(p).set(d)}),
+    collection:n=>({limit:k=>({get:()=>col(n).limit(k).get(),onSnapshot:(a,b)=>col(n).limit(k).onSnapshot(a,b)})})
+  };
+  return {db:dbx,uid:cred.user.uid};
+}
 const $=id=>document.getElementById(id);
 const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 const norm=s=>s.toLowerCase().replace(/[\s’'`.,!?()\-_·~:]/g,"");
@@ -356,10 +383,15 @@ drawTabs();drawMenu();drawNick();
 (async()=>{
   const to=setTimeout(()=>{if($("lb").textContent.startsWith("불러오는"))$("lb").textContent="순위표를 아직 불러오지 못했어요. 이 환경에서는 표시되지 않을 수 있어요."},10000);
   try{
-    if(!window.claude)throw 0;
-    const user=await claude.use("user");db=await claude.use("db");
-    if(!db){$("lb").textContent="순위표는 로그인한 상태에서만 볼 수 있어요.";return}
-    if(user)uid=await user.id();
+    if(window.claude){
+      const user=await claude.use("user");db=await claude.use("db");
+      if(!db){$("lb").textContent="순위표는 로그인한 상태에서만 볼 수 있어요.";return}
+      if(user)uid=await user.id();
+    }else{
+      const fb=await fbInit();
+      if(!fb){clearTimeout(to);$("lb").textContent="순위표 설정이 필요해요. (FIREBASE_CONFIG를 입력해 주세요)";return}
+      db=fb.db;uid=fb.uid;
+    }
     db.collection("scores").limit(500).onSnapshot(s=>{
       clearTimeout(to);rows=s.docs.map(d=>({id:d.id,...d.data()}));
       const me=rows.find(r=>r.id===uid);if(me&&me.g){myG={...me.g,...myG};drawMenu()}
