@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>남우현 퀴즈 파크</title>
 <style>
-:root{--bg:#f7f6f2;--card:#fff;--tx:#1d1d1b;--mut:#6b6a66;--ac:#3b6ee0;--ok:#1f9d55;--bad:#d64545;--bd:#e2e0d8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17181b;--card:#222428;--tx:#f0efea;--mut:#9a9992;--ac:#7ba2ff;--ok:#4cc27f;--bad:#ef7a7a;--bd:#34363c;color-scheme:dark}}
-:root[data-theme="dark"]{--bg:#17181b;--card:#222428;--tx:#f0efea;--mut:#9a9992;--ac:#7ba2ff;--ok:#4cc27f;--bad:#ef7a7a;--bd:#34363c;color-scheme:dark}
+:root{--trunk:#7a5a3a;--ground:#dfe6d2;--sky2:#cfe3ef;--sky:#eef4ea;--bg:#f7f6f2;--card:#fff;--tx:#1d1d1b;--mut:#6b6a66;--ac:#3b6ee0;--ok:#1f9d55;--bad:#d64545;--bd:#e2e0d8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17181b;--card:#222428;--tx:#f0efea;--mut:#9a9992;--ac:#7ba2ff;--ok:#4cc27f;--bad:#ef7a7a;--bd:#34363c;--trunk:#a07c58;--ground:#2a3326;--sky2:#101820;--sky:#1d2420;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17181b;--card:#222428;--tx:#f0efea;--mut:#9a9992;--ac:#7ba2ff;--ok:#4cc27f;--bad:#ef7a7a;--bd:#34363c;--trunk:#a07c58;--ground:#2a3326;--sky2:#101820;--sky:#1d2420;color-scheme:dark}
 *{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
 body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 -apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif}
 main{max-width:620px;margin:0 auto;padding:20px 16px 40px}
@@ -18,23 +18,68 @@ button.g{background:transparent;color:var(--tx);border:1px solid var(--bd)}butto
 input[type=text]{width:100%;font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx)}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .gm{text-align:left;background:var(--card);color:var(--tx);border:1px solid var(--bd);padding:12px}.gm b{display:block}.gm span{font-size:12px;color:var(--mut)}.gm i{font-style:normal;font-size:12px;color:var(--ac)}
+.tree{background:linear-gradient(var(--sky2),var(--sky));border:1px solid var(--bd);border-radius:18px;padding:8px 4px 0;margin-bottom:6px}
+.tree svg{display:block;width:100%;height:auto;max-height:640px}
+.tree .lf{cursor:pointer;outline:none}.tree .lf .ls{transform-box:fill-box;transform-origin:0 50%;transition:transform .18s}
+.tree .lf:hover .ls,.tree .lf:focus-visible .ls{transform:scale(1.08)}
+.tree .lf:focus-visible path.lp{stroke:var(--tx);stroke-width:3}
+.tree .sw{animation:sway 5s ease-in-out infinite alternate}
+@keyframes sway{from{transform:rotate(-1.6deg)}to{transform:rotate(1.6deg)}}
+@media (prefers-reduced-motion:reduce){.tree .sw{animation:none}.tree .lf .ls{transition:none}}
+.tcap{min-height:44px;text-align:center;font-size:13px;color:var(--mut);padding:2px 12px 10px}
 .bar{height:8px;background:var(--bd);border-radius:6px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;width:100%;background:var(--ac)}
 .big{font-size:34px;font-weight:700;text-align:center}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
 .ok{color:var(--ok)}.bad{color:var(--bad)}.hide{display:none}.opts{display:grid;gap:8px;margin-top:10px}
 .q{font-size:20px;font-weight:700;text-align:center;margin:10px 0}
 .cv{border-radius:10px;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:6px;font-weight:700;background-size:cover;background-position:center;text-shadow:0 1px 4px rgba(0,0,0,.5);font-size:14px}.cv small{font-weight:400;opacity:.9}
 table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px 4px;border-bottom:1px solid var(--bd);text-align:left}th{color:var(--mut);font-weight:500}td.n,th.n{text-align:right}tr.me{font-weight:700;color:var(--ac)}
+
+body.tree-on{overflow:hidden;height:100%}
+#home{position:fixed;inset:0;z-index:5;overflow:hidden;background:linear-gradient(var(--sky2),var(--sky) 72%,var(--ground))}
+#photo{position:absolute;inset:0;background:center/cover no-repeat;opacity:0;transition:opacity .5s}
+#home.photo #photo{opacity:1}
+#home.photo .proc,#home.photo .twig{display:none}
+#menu{position:absolute;inset:0}
+#menu svg{display:block;width:100%;height:100%;overflow:visible}
+#ttl,#nickBadge{position:absolute;top:calc(12px + env(safe-area-inset-top,0px));background:var(--card);opacity:.92;border:1px solid var(--bd);border-radius:12px;padding:6px 12px;font-size:13px;display:flex;flex-direction:column;line-height:1.3}
+#ttl{left:max(12px,env(safe-area-inset-left,0px))}#ttl b{font-size:15px}#ttl span{color:var(--mut);font-size:12px}
+#nickBadge{right:max(12px,env(safe-area-inset-right,0px))}#nickBadge:empty{display:none}
+#tcap{position:absolute;left:0;right:0;bottom:calc(12px + env(safe-area-inset-bottom,0px));text-align:center;color:#fff;font-size:14px;font-weight:600;text-shadow:0 1px 4px rgba(0,0,0,.7);padding:0 16px;pointer-events:none}
+.modal{position:fixed;inset:0;z-index:20;background:rgba(10,16,10,.55);backdrop-filter:blur(3px);display:flex;align-items:center;justify-content:center;padding:16px}
+.modal.hide{display:none}#gt.hide{display:none!important}
+.mbox{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:20px;width:min(380px,100%);max-height:88vh;overflow:auto}
+.mbox.wide{width:min(560px,100%)}.mbox h2{margin:0 0 6px;font-size:20px}
+.tree .sw{animation:sway 5s ease-in-out infinite alternate}
+.lf .ls{transform-box:fill-box;transform-origin:0 50%;transition:transform .18s}.lf{cursor:pointer;outline:none}
+.lf:hover .ls,.lf:focus-visible .ls{transform:scale(1.08)}.lf:focus-visible path.lp{stroke:#fff;stroke-width:3}
+.sw{animation:sway 5s ease-in-out infinite alternate}
+@media (prefers-reduced-motion:reduce){.sw{animation:none}.lf .ls,#photo{transition:none}}
+body:not(.tree-on){background:#88b04b}
+body:not(.tree-on) main>h1,body:not(.tree-on) #gt,body:not(.tree-on) main>.s{color:#1c2a0e}
+#gtHome{background:var(--card)}
 </style>
 </head>
-<body>
+<body class="tree-on">
 <main>
-<h1>🎵 남우현 퀴즈 파크</h1>
+<h1>🌳 남우현 퀴즈 파크</h1>
 <p class="s"><span id="cnt"></span> · 순위는 게임별 최고점으로 매겨져요</p>
 
 <section id="home">
-<div class="card" id="nickCard"><input type="text" id="nick" maxlength="12" placeholder="닉네임 (순위표에 표시)"><div class="mut" id="msg" style="margin-top:6px"></div></div>
-<div class="grid" id="menu"></div>
-<div class="card" style="margin-top:14px"><b>🏆 게임별 순위</b><div id="tabs" class="row"></div><div id="lb" class="mut" style="margin-top:8px">불러오는 중…</div></div>
+<div id="photo"></div>
+<div id="menu"></div>
+<div id="nickBadge"></div>
+<div id="tcap" aria-live="polite"></div>
+</section>
+<div id="nickModal" class="modal" role="dialog" aria-modal="true" aria-labelledby="nTitle"><div class="mbox">
+<h2 id="nTitle">닉네임 설정</h2>
+<p class="mut">순위표에 표시될 이름이에요. 모든 게임에 같이 적용되고, 한 번 정하면 다음에 다시 접속할 때 바꿀 수 있어요.</p>
+<input type="text" id="nick" maxlength="12" placeholder="닉네임 (최대 12자)" autocomplete="off">
+<div class="mut" id="msg" style="min-height:22px;margin-top:6px"></div>
+<button id="nickOk" style="width:100%;margin-top:6px">설정</button>
+</div></div>
+<div id="gt" class="hide" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-weight:700;font-size:19px;margin:6px 2px 10px"><span id="gtt"></span><button class="g" id="gtHome" style="padding:6px 12px;font-size:14px;white-space:nowrap">🌳 나무로 돌아가기</button></div>
+<section id="rankPage" class="hide">
+<div class="card"><div class="mut">총합은 여섯 게임의 최고점을 모두 더한 점수예요. 게임 탭을 누르면 게임별 순위를 볼 수 있어요. (상위 20명)</div><div id="tabs" class="row"></div><div id="lb" class="mut" style="margin-top:8px">불러오는 중…</div></div>
 </section>
 
 <section id="stage" class="card hide"></section>
@@ -139,39 +184,85 @@ function saveNick(v){
   }
   drawNick();
 }
-function drawNick(edit){
-  if(!nick)return;const c=$("nickCard");c.innerHTML="";
-  if(edit){
-    const i=document.createElement("input");i.type="text";i.maxLength=12;i.value=nick;
-    const r=document.createElement("div");r.className="row";
-    const s=document.createElement("button");s.textContent="저장";
-    const x=document.createElement("button");x.className="g";x.textContent="취소";
-    s.onclick=()=>{const v=i.value.trim().slice(0,12);if(v)saveNick(v)};
-    x.onclick=()=>drawNick();
-    r.append(s,x);c.append(i,r);i.focus();return;
-  }
-  const b=document.createElement("b");b.textContent=nick;c.append("닉네임 · ",b);
-  if(canEdit){const e=document.createElement("button");e.className="g";e.textContent="변경";e.style.cssText="margin-left:10px;padding:4px 10px;font-size:13px";e.onclick=()=>drawNick(true);c.appendChild(e)}
-  const m=document.createElement("div");m.className="mut";m.textContent=canEdit?"모든 게임에 적용돼요 · 지금 변경할 수 있어요":"모든 게임에 적용돼요 · 닉네임은 다음에 다시 접속할 때 변경할 수 있어요";c.appendChild(m);
-}
+function drawNick(){const b=$("nickBadge");b.textContent=nick?"👤 "+nick:"";if(nick&&!$("nick").value)$("nick").value=nick}
 
 /* ---- 공통 ---- */
-function view(h){$("home").classList.add("hide");$("stage").classList.remove("hide");$("stage").innerHTML=h}
-function home(){clearInterval(tm);$("stage").classList.add("hide");$("home").classList.remove("hide");drawMenu()}
-function drawMenu(){$("menu").innerHTML=GAMES.map(g=>`<button class="gm" data-g="${g.id}"><b>${g.n}</b><span>${g.d}</span><br><i>내 최고 ${myG[g.id]||0}점</i></button>`).join("");
-  $("menu").querySelectorAll("button").forEach(b=>b.onclick=()=>start(b.dataset.g))}
+function view(h){$("gt").classList.remove("hide");document.body.classList.remove("tree-on");$("home").classList.add("hide");$("stage").classList.remove("hide");$("stage").innerHTML=h}
+function home(){$("gt").classList.add("hide");$("rankPage").classList.add("hide");document.body.classList.add("tree-on");window.scrollTo(0,0);clearInterval(tm);$("stage").classList.add("hide");$("home").classList.remove("hide");drawMenu()}
+/* 나뭇잎 위치: [x, y, 기울기, 방향(-1 왼쪽, 1 오른쪽)] — 사진을 쓸 때 여기 숫자만 고치면 돼요 (화면 크기 560x700 기준) */
+const LEAF_POS=[[205,445,6,-1],[355,420,-6,1],[190,335,-4,-1],[370,310,5,1],[205,225,8,-1],[355,200,-8,1],[292,112,-24,1]];
+function drawMenu(){
+  const SH={album:"앨범 맞히기",cho:"초성 퀴즈",hint:"힌트 추리",order:"발매순 정렬",ox:"O/X 퀴즈",musical:"뮤지컬 퀴즈"};
+  const items=GAMES.map(g=>({id:g.id,t:SH[g.id],sub:"최고 "+(myG[g.id]||0)+"점",d:g.d,fn:()=>start(g.id),aria:SH[g.id]+", 내 최고 "+(myG[g.id]||0)+"점"}))
+    .concat([{id:"rank",t:"전체 순위",sub:"🏆 순위 보기",d:"게임별 순위표를 확인해요",fn:openLb,aria:"전체 순위 보기",gold:1}]);
+  let seed=7;const R=()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
+  const f=n=>n.toFixed(1),CX=280,GY=668,pts=[];
+  const tx=y=>CX+Math.sin(y/90)*5;
+  function tp(p0,c,p1,w0,w1,keep){const N=14,L=[],Rr=[];
+    for(let k=0;k<=N;k++){const t=k/N,u=1-t;
+      const x=u*u*p0[0]+2*u*t*c[0]+t*t*p1[0],y=u*u*p0[1]+2*u*t*c[1]+t*t*p1[1];
+      let dx=2*u*(c[0]-p0[0])+2*t*(p1[0]-c[0]),dy=2*u*(c[1]-p0[1])+2*t*(p1[1]-c[1]);const m=Math.hypot(dx,dy)||1;dx/=m;dy/=m;
+      const w=(w0+(w1-w0)*t)/2;L.push([x-dy*w,y+dx*w]);Rr.push([x+dy*w,y-dx*w]);
+      if(keep&&k%3==0)pts.push([x,y]);}
+    return"M"+L.concat(Rr.reverse()).map(v=>f(v[0])+","+f(v[1])).join("L")+"Z"}
+  let o='<svg viewBox="0 0 560 700" preserveAspectRatio="xMidYMax meet" role="group" aria-label="나무에 달린 일곱 개의 나뭇잎 메뉴"><defs>'
+   +'<linearGradient id="bg1" x1="0" x2="1"><stop offset="0" stop-color="#3b2a1b"/><stop offset=".35" stop-color="#7d5e42"/><stop offset=".6" stop-color="#6a4d35"/><stop offset="1" stop-color="#34251a"/></linearGradient>'
+   +'<linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4aa04a"/><stop offset="1" stop-color="#1f5f2e"/></linearGradient>'
+   +'<linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9a62e"/><stop offset="1" stop-color="#8a5a12"/></linearGradient>'
+   +'<linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6e9a4a"/><stop offset="1" stop-color="#3d5f2c"/></linearGradient>'
+   +'<filter id="bk" x="-15%" y="-5%" width="130%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.05 0.28" numOctaves="3" seed="4" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 .12 0 0 0 0 .08 0 0 0 0 .04 0 0 0 -1.8 1.15" result="d"/><feComposite in="d" in2="SourceAlpha" operator="in" result="dd"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="dd"/></feMerge></filter>'
+   +'<filter id="sh" x="-20%" y="-30%" width="150%" height="170%"><feDropShadow dx="1.5" dy="3" stdDeviation="2.5" flood-color="#000" flood-opacity=".4"/></filter>'
+   +'<filter id="bl"><feGaussianBlur stdDeviation="9"/></filter></defs>';
+  // 가지
+  let trunk=tp([tx(GY),GY],[CX-4,430],[tx(120),120],108,32,false);
+  [[[CX-200,GY+2],[CX-100,GY-2],[CX-22,GY-46]],[[CX-140,GY],[CX-70,GY-18],[CX-10,GY-62]],[[CX-70,GY-2],[CX-36,GY-22],[CX-4,GY-58]],[[CX+204,GY+2],[CX+104,GY-2],[CX+24,GY-46]],[[CX+144,GY],[CX+74,GY-18],[CX+10,GY-62]],[[CX+72,GY-2],[CX+38,GY-22],[CX+6,GY-58]]].forEach(r=>{trunk+=tp(r[0],r[1],r[2],9,40,false)});
+  let twA='';
+  LEAF_POS.forEach(a=>{const y0=Math.max(a[1]+26,140),x0=tx(y0);twA+=tp([x0,y0],[(x0+a[0])/2+(R()-.5)*14,y0-8-R()*18],[a[0],a[1]],22,6,true)});
+  for(let k=0;k<18;k++){const y0=140+R()*320,x0=tx(y0),d=R()<.5?-1:1,len=45+R()*70,x1=x0+d*len,y1=y0-25-R()*60;
+    trunk+=tp([x0,y0],[x0+d*len*.5,y0-8-R()*20],[x1,y1],13,2.5,true);
+    if(R()<.6){const x2=x1+d*(15+R()*30),y2=y1-(15+R()*30);trunk+=tp([x1,y1],[x1+d*10,y1-18],[x2,y2],6,1.5,true)}}
+  trunk+=tp([CX,140],[CX-10,100],[CX-17,58],24,7,true)+tp([CX,140],[CX+14,104],[CX+20,60],22,7,true);
+  // 지면(화면 가로 전체)
+  let o2='<path d="M-2500,676 Q280,628 3100,676 V1400 H-2500Z" fill="url(#gr)"/>';
+  for(let k=0;k<340;k++){const x=-380+R()*1320,y=666+R()*30,h=7+R()*13,b=(R()-.5)*8;o2+=`<path d="M${f(x)},${f(y)} q${f(b/2)},${f(-h*.6)} ${f(b)},${f(-h)}" stroke="${R()<.5?"#4f7a35":"#7aa650"}" stroke-width="1.3" fill="none" stroke-linecap="round"/>`}
+  o2+='<ellipse cx="290" cy="672" rx="130" ry="10" fill="#000" opacity=".2" filter="url(#bl)"/>';
+  for(let k=0;k<16;k++){const a=R()*6.28,r=Math.sqrt(R());o2+=`<circle cx="${f(CX+Math.cos(a)*r*205)}" cy="${f(280+Math.sin(a)*r*195)}" r="${f(34+R()*30)}" fill="#3f6e35" opacity=".16" filter="url(#bl)"/>`}
+  const pal=["#86b56a","#6ea25a","#93c273","#5e944c","#a6cc7e","#79ad60","#c1d97a"];
+  const lf=(x,y,sc,fr)=>{const a=R()*6.28,l=(9+R()*8)*sc,w=l*.5,c=pal[Math.floor(R()*pal.length)];
+    return`<path transform="translate(${f(x)},${f(y)}) rotate(${f(a*57.3)})" d="M0,0 C${f(l*.2)},${f(-w)} ${f(l*.8)},${f(-w*.8)} ${f(l)},0 C${f(l*.8)},${f(w*.8)} ${f(l*.2)},${f(w)} 0,0Z" fill="${c}" opacity="${fr?.95:.85}"/>`};
+  let back='',front='';
+  pts.forEach(p=>{for(let k=0;k<7;k++)back+=lf(p[0]+(R()-.5)*46,p[1]+(R()-.5)*40,1,false)});
+  for(let k=0;k<110;k++){const a=R()*6.28,r=Math.sqrt(R());back+=lf(CX+Math.cos(a)*r*215,260+Math.sin(a)*r*190,1.1,false)}
+  pts.forEach((p,k)=>{if(k%2==0)for(let m=0;m<3;m++)front+=lf(p[0]+(R()-.5)*30,p[1]+(R()-.5)*26,.9,true)});
+  o+='<g class="proc">'+o2+back+'</g><g class="proc" filter="url(#bk)" fill="url(#bg1)"><path d="'+trunk+'"/></g>'
+    +'<g class="twig" filter="url(#bk)" fill="url(#bg1)"><path d="'+twA+'"/></g><g class="proc">'+front+'</g>';
+  // 나뭇잎 = 메뉴
+  const w=140,h=38;
+  items.forEach((it,k)=>{const [x,y,r,d]=LEAF_POS[k];
+    const lp=`M0,0 C${d*w*.14},${-h*.95} ${d*w*.55},${-h*1.1} ${d*w},0 C${d*w*.55},${h*1.1} ${d*w*.14},${h*.95} 0,0Z`;
+    let vn=`<path d="M${d*-12},0 L${d*w*.94},0" stroke="#f3e6b8" stroke-opacity=".55" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    [.2,.38,.56,.74].forEach(t=>{const xx=d*w*t,l=h*(.78-t*.5);vn+=`<path d="M${f(xx)},0 l${f(d*l*.8)},${f(-l)} M${f(xx)},0 l${f(d*l*.8)},${f(l)}" stroke="#f3e6b8" stroke-opacity=".32" stroke-width="1.2" fill="none" stroke-linecap="round"/>`});
+    const t2=f(d*w*.5),st='fill="#fff" stroke="#10361a" stroke-opacity=".65" paint-order="stroke" text-anchor="middle"';
+    o+=`<g transform="translate(${x},${y}) rotate(${r})"><g class="sw" style="animation-delay:${-k*.8}s;transform-origin:0 0"><g class="lf" data-i="${k}" role="button" tabindex="0" aria-label="${it.aria}"><g class="ls" filter="url(#sh)"><path class="lp" d="${lp}" fill="url(#${it.gold?"lg2":"lg"})" stroke="#f3ecd0" stroke-opacity=".5" stroke-width="1.2"/>${vn}<text x="${t2}" y="-4" ${st} stroke-width="3" font-size="16" font-weight="700">${it.t}</text><text x="${t2}" y="14" ${st} stroke-width="2.5" font-size="12">${it.sub}</text></g></g></g></g>`});
+  o+='</svg>';
+  $("menu").innerHTML=o;
+  const cap=$("tcap"),def="";
+  $("menu").querySelectorAll(".lf").forEach(e=>{const it=items[+e.dataset.i];
+    e.onclick=it.fn;
+    e.onkeydown=ev=>{if(ev.key==="Enter"||ev.key===" "){ev.preventDefault();it.fn()}};
+    const on=()=>{cap.textContent=it.d},off=()=>{cap.textContent=def};
+    e.onmouseenter=on;e.onfocus=on;e.onmouseleave=off;e.onblur=off});
+}
 function start(g){
-  if(!nick){
-    const v=$("nick").value.trim().slice(0,12);
-    if(!v){$("msg").textContent="닉네임을 먼저 입력해 주세요.";$("nick").focus();return}
-    saveNick(v);
-  }({album,cho,hint,order,ox,musical})[g]();
+  if(!nick){openNick();return}
+$("gtt").textContent="🌱 "+GAMES.find(x=>x.id===g).n;
+  ({album,cho,hint,order,ox,musical})[g]();
 }
 async function endGame(g,sc,note){
   clearInterval(tm);sc=Math.max(0,Math.min(100,Math.round(sc)));
   const prev=myG[g]||0;if(sc>prev)myG[g]=sc;
   const total=Object.values(myG).reduce((a,b)=>a+b,0);
-  view(`<b>${GAMES.find(x=>x.id===g).n} 결과</b><div class="big">${sc}점</div><div class="mut" style="text-align:center">${note||""}${sc>prev?" · 최고 기록 갱신!":""}</div>
+  view(`<b>결과</b><div class="big">${sc}점</div><div class="mut" style="text-align:center">${note||""}${sc>prev?" · 최고 기록 갱신!":""}</div>
   <div id="rk" style="text-align:center;font-weight:700;margin-top:8px"></div><div class="row"><button id="re">다시 하기</button><button class="g" id="hm">홈으로</button></div>`);
   $("re").onclick=()=>start(g);$("hm").onclick=home;
   if(!db||!uid){$("rk").textContent="이 환경에서는 순위가 저장되지 않아요.";return}
@@ -367,12 +458,12 @@ function musical(){
 }
 
 /* ---- 순위표 ---- */
-let curTab="album";
-function drawTabs(){$("tabs").innerHTML="";GAMES.forEach(g=>{const b=document.createElement("button");b.textContent=g.n;b.className=g.id===curTab?"":"g";b.style.padding="6px 10px";b.style.fontSize="13px";b.onclick=()=>{curTab=g.id;drawTabs();renderLb()};$("tabs").appendChild(b)})}
+let curTab="total";
+function drawTabs(){$("tabs").innerHTML="";[{id:"total",n:"총합"},...GAMES].forEach(g=>{const b=document.createElement("button");b.textContent=g.n;b.className=g.id===curTab?"":"g";b.style.padding="6px 10px";b.style.fontSize="13px";b.onclick=()=>{curTab=g.id;drawTabs();renderLb()};$("tabs").appendChild(b)})}
 function renderLb(){
-  const list=rows.map(r=>({id:r.id,name:r.name,s:(r.g||{})[curTab]||0})).filter(r=>r.s>0).sort((a,b)=>b.s-a.s).slice(0,20);
-  if(!list.length){$("lb").textContent="이 게임은 아직 기록이 없어요. 첫 기록을 남겨 보세요!";return}
-  const t=document.createElement("table");t.innerHTML="<tr><th>순위</th><th>닉네임</th><th class='n'>최고점</th></tr>";
+  const list=rows.map(r=>({id:r.id,name:r.name,s:curTab==="total"?GAMES.reduce((a,g)=>a+((r.g||{})[g.id]||0),0):(r.g||{})[curTab]||0})).filter(r=>r.s>0).sort((a,b)=>b.s-a.s).slice(0,20);
+  if(!list.length){$("lb").textContent="아직 기록이 없어요. 첫 기록을 남겨 보세요!";return}
+  const t=document.createElement("table");t.innerHTML="<tr><th>순위</th><th>닉네임</th><th class='n'>"+(curTab==="total"?"총점":"최고점")+"</th></tr>";
   let rank=0,prev=null;
   list.forEach((r,i)=>{if(r.s!==prev){rank=i+1;prev=r.s}
     const tr=document.createElement("tr");if(r.id===uid)tr.className="me";
@@ -380,6 +471,13 @@ function renderLb(){
   $("lb").textContent="";$("lb").appendChild(t);
 }
 drawTabs();drawMenu();drawNick();
+function openNick(){$("nickModal").classList.remove("hide");$("nick").value=nick;$("msg").textContent=nick?"이전에 쓰던 닉네임이에요. 그대로 쓰거나 바꿔서 설정을 눌러 주세요.":"";setTimeout(()=>$("nick").focus(),60)}
+function okNick(){const v=$("nick").value.trim().slice(0,12);if(!v){$("msg").textContent="닉네임을 입력해 주세요.";return}saveNick(v);$("nickModal").classList.add("hide")}
+$("nickOk").onclick=okNick;$("nick").onkeydown=e=>{if(e.key==="Enter")okNick()};
+function openLb(){document.body.classList.remove("tree-on");$("home").classList.add("hide");$("rankPage").classList.remove("hide");$("gtt").textContent="🏆 전체 순위";$("gt").classList.remove("hide");window.scrollTo(0,0);renderLb()}
+$("gtHome").onclick=()=>home();
+{const im=new Image();im.onload=()=>{$("photo").style.backgroundImage='url("tree.jpg")';$("home").classList.add("photo")};im.src="tree.jpg"}
+openNick();
 (async()=>{
   const to=setTimeout(()=>{if($("lb").textContent.startsWith("불러오는"))$("lb").textContent="순위표를 아직 불러오지 못했어요. 이 환경에서는 표시되지 않을 수 있어요."},10000);
   try{
