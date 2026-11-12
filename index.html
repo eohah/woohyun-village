@@ -52,8 +52,8 @@ body.tree-on{overflow:hidden;height:100%}
 .mbox{background:var(--card);border:1px solid var(--bd);border-radius:16px;padding:20px;width:min(380px,100%);max-height:88vh;overflow:auto}
 .mbox.wide{width:min(560px,100%)}.mbox h2{margin:0 0 6px;font-size:20px}
 .tree .sw{animation:sway 5s ease-in-out infinite alternate}
-.lf .ls{transform-box:fill-box;transform-origin:0 50%;transition:transform .18s}.lf{cursor:pointer;outline:none}
-.lf:hover .ls,.lf:focus-visible .ls{transform:scale(1.08)}.lf:focus-visible path.lp{stroke:#fff;stroke-width:3}
+.lf .ls{transform-box:fill-box;transform-origin:0 50%;transition:transform .18s;transform:scale(var(--k,1))}.lf{cursor:pointer;outline:none}
+.lf:hover .ls,.lf:focus-visible .ls{transform:scale(calc(var(--k,1)*1.08))}.lf:focus-visible path.lp{stroke:#fff;stroke-width:3}
 .sw{animation:sway 5s ease-in-out infinite alternate}
 @media (prefers-reduced-motion:reduce){.sw{animation:none}.lf .ls,#photo{transition:none}}
 body:not(.tree-on){background:#88b04b}
@@ -67,7 +67,9 @@ body:not(.tree-on) main>h1,body:not(.tree-on) #gt,body:not(.tree-on) main>.s{col
 input[type=text]{font-size:16px;min-height:44px}
 @media (min-width:600px){.opts{grid-template-columns:1fr 1fr}main{max-width:700px}}
 @media (min-width:960px){main{max-width:780px}.card{padding:22px}}
-@media (max-width:430px){.lf text:nth-of-type(1){font-size:18px}.lf text:nth-of-type(2){font-size:13.5px}}
+@media (max-width:600px){#menu{--k:1.18}}
+@media (orientation:portrait){#menu svg{margin-top:max(0px,calc((100dvh - 137vw)*.32))}}
+@media (max-width:430px){.lf text:nth-of-type(1){font-size:17px}.lf text:nth-of-type(2){font-size:13px}}
 @media (max-height:540px){
  main{padding-top:10px;padding-bottom:20px}
  h1{font-size:18px;margin:0}main>.s{display:none}
@@ -229,7 +231,7 @@ function drawMenu(){
       const w=(w0+(w1-w0)*t)/2;L.push([x-dy*w,y+dx*w]);Rr.push([x+dy*w,y-dx*w]);
       if(keep&&k%3==0)pts.push([x,y]);}
     return"M"+L.concat(Rr.reverse()).map(v=>f(v[0])+","+f(v[1])).join("L")+"Z"}
-  let o='<svg viewBox="0 -40 560 740" preserveAspectRatio="xMidYMin meet" role="group" aria-label="나무에 달린 일곱 개의 나뭇잎 메뉴"><defs>'
+  let o='<svg viewBox="10 -40 540 740" preserveAspectRatio="xMidYMin meet" role="group" aria-label="나무에 달린 일곱 개의 나뭇잎 메뉴"><defs>'
    +'<linearGradient id="bg1" x1="0" x2="1"><stop offset="0" stop-color="#3b2a1b"/><stop offset=".35" stop-color="#7d5e42"/><stop offset=".6" stop-color="#6a4d35"/><stop offset="1" stop-color="#34251a"/></linearGradient>'
    +'<linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4aa04a"/><stop offset="1" stop-color="#1f5f2e"/></linearGradient>'
    +'<linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9a62e"/><stop offset="1" stop-color="#8a5a12"/></linearGradient>'
@@ -250,6 +252,14 @@ function drawMenu(){
   let o2='<path d="M-2500,676 Q280,628 3100,676 V1400 H-2500Z" fill="url(#gr)"/>';
   for(let k=0;k<340;k++){const x=-380+R()*1320,y=666+R()*30,h=7+R()*13,b=(R()-.5)*8;o2+=`<path d="M${f(x)},${f(y)} q${f(b/2)},${f(-h*.6)} ${f(b)},${f(-h)}" stroke="${R()<.5?"#4f7a35":"#7aa650"}" stroke-width="1.3" fill="none" stroke-linecap="round"/>`}
   o2+='<ellipse cx="290" cy="672" rx="130" ry="10" fill="#000" opacity=".2" filter="url(#bl)"/>';
+  {let q=23;const R2=()=>{q=(q*1664525+1013904223)>>>0;return q/4294967296};
+   const it=[];for(let k=0;k<240;k++){const y=690+Math.pow(R2(),.85)*580,x=-330+R2()*1220;if(y<720&&Math.abs(x-290)<150)continue;it.push([y,x,R2(),R2(),R2()])}
+   it.sort((a,b)=>a[0]-b[0]);
+   const L1=["#b9e08c","#c9eb9f","#d6f2ad","#aedc7e"],L2=["#9bd06c","#8cc45c","#a4d676","#7fba50"];
+   it.forEach(([y,x,r1,r2,r3])=>{const s=(.9+(y-690)/580*1.6)*(.6+r1*1.4),c1=L1[Math.floor(r2*4)],c2=L2[Math.floor(r3*4)],fl=r1<.5?1:-1;let g=`<g transform="translate(${f(x)},${f(y)}) scale(${f(s*fl)},${f(s)})">`;
+     if(r2<.7)g+=`<path d="M0,0 q0,-8 1,-13" stroke="#5e944c" stroke-width="2" fill="none"/><path d="M1,-13 q-9,-1 -12,-9 q9,-1 12,9z" fill="${c1}"/><path d="M1,-13 q9,0 12,-8 q-9,-2 -12,8z" fill="${c2}"/>`;
+     else g+=`<path d="M0,0 q-1,-10 1,-19" stroke="#5e944c" stroke-width="2" fill="none"/><path d="M1,-19 q-8,-2 -10,-10 q8,-1 10,10z" fill="${c1}"/><path d="M1,-19 q8,-1 11,-9 q-9,-2 -11,9z" fill="${c2}"/><path d="M0,-9 q-8,0 -11,-6 q8,-1 11,6z" fill="${c2}"/><path d="M0,-9 q7,1 10,-5 q-7,-2 -10,5z" fill="${c1}"/>`;
+     o2+=g+'</g>'})}
   for(let k=0;k<16;k++){const a=R()*6.28,r=Math.sqrt(R());o2+=`<circle cx="${f(CX+Math.cos(a)*r*205)}" cy="${f(280+Math.sin(a)*r*195)}" r="${f(34+R()*30)}" fill="#3f6e35" opacity=".16" filter="url(#bl)"/>`}
   const pal=["#86b56a","#6ea25a","#93c273","#5e944c","#a6cc7e","#79ad60","#c1d97a"];
   const lf=(x,y,sc,fr)=>{const a=R()*6.28,l=(9+R()*8)*sc,w=l*.5,c=pal[Math.floor(R()*pal.length)];
