@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>남우현 퀴즈 파크</title>
+<style>
+:root{--bg:#f7f6f2;--card:#fff;--tx:#1d1d1b;--mut:#6b6a66;--ac:#3b6ee0;--ok:#1f9d55;--bad:#d64545;--bd:#e2e0d8;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17181b;--card:#222428;--tx:#f0efea;--mut:#9a9992;--ac:#7ba2ff;--ok:#4cc27f;--bad:#ef7a7a;--bd:#34363c;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17181b;--card:#222428;--tx:#f0efea;--mut:#9a9992;--ac:#7ba2ff;--ok:#4cc27f;--bad:#ef7a7a;--bd:#34363c;color-scheme:dark}
+*{box-sizing:border-box}html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font:16px/1.55 -apple-system,"Apple SD Gothic Neo","Noto Sans KR","Malgun Gothic",sans-serif}
+main{max-width:620px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:22px;margin:4px 0 2px}.s,.mut{color:var(--mut);font-size:13px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:14px;padding:16px;margin-bottom:14px}
+button,.btn{font:inherit;border:0;border-radius:10px;padding:10px 16px;background:var(--ac);color:#fff;cursor:pointer}
+button.g{background:transparent;color:var(--tx);border:1px solid var(--bd)}button:disabled{opacity:.5;cursor:default}
+input[type=text]{width:100%;font:inherit;padding:10px 12px;border-radius:10px;border:1px solid var(--bd);background:var(--bg);color:var(--tx)}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gm{text-align:left;background:var(--card);color:var(--tx);border:1px solid var(--bd);padding:12px}.gm b{display:block}.gm span{font-size:12px;color:var(--mut)}.gm i{font-style:normal;font-size:12px;color:var(--ac)}
+.bar{height:8px;background:var(--bd);border-radius:6px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;width:100%;background:var(--ac)}
+.big{font-size:34px;font-weight:700;text-align:center}.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;align-items:center}
+.ok{color:var(--ok)}.bad{color:var(--bad)}.hide{display:none}.opts{display:grid;gap:8px;margin-top:10px}
+.q{font-size:20px;font-weight:700;text-align:center;margin:10px 0}
+.cv{border-radius:10px;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:6px;font-weight:700;background-size:cover;background-position:center;text-shadow:0 1px 4px rgba(0,0,0,.5);font-size:14px}.cv small{font-weight:400;opacity:.9}
+.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
+.cd{aspect-ratio:1/1;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:12px;font-weight:700;cursor:pointer;overflow:hidden}
+.cd.back{background:var(--ac);color:#fff;font-size:22px}.cd.done{opacity:.5;cursor:default}
+.oc{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.oc .cv{cursor:pointer;font-size:12px}.oc .used{opacity:.3}
+table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px 4px;border-bottom:1px solid var(--bd);text-align:left}th{color:var(--mut);font-weight:500}td.n,th.n{text-align:right}tr.me{font-weight:700;color:var(--ac)}
+</style>
+</head>
+<body>
+<main>
+<h1>🎵 남우현 퀴즈 파크</h1>
+<p class="s">소리 없이 즐기는 5가지 게임 · <span id="cnt"></span> · 순위는 게임별 최고점으로 매겨져요</p>
+
+<section id="home">
+<div class="card"><input type="text" id="nick" maxlength="12" placeholder="닉네임 (순위표에 표시)"><div class="mut" id="msg" style="margin-top:6px"></div></div>
+<div class="grid" id="menu"></div>
+<div class="card" style="margin-top:14px"><b>🏆 게임별 순위</b><div id="tabs" class="row"></div><div id="lb" class="mut" style="margin-top:8px">불러오는 중…</div></div>
+<details class="card"><summary class="mut" style="cursor:pointer">앨범 커버 이미지 넣기 (선택)</summary>
+<p class="mut">실제 커버는 이 페이지에 내장할 수 없어서 기본은 색 카드예요. 가지고 있는 이미지를 고르면 이 브라우저에서만 적용돼요.</p><div id="up"></div></details>
+</section>
+
+<section id="stage" class="card hide"></section>
+</main>
+<script>
+const $=id=>document.getElementById(id);
+const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+const norm=s=>s.toLowerCase().replace(/[\s’'`.,!?()\-_·~:]/g,"");
+const ALB=[
+{id:"w1",n:"Write..",y:"2016",d:201605,c:["#7aa6e8","#2b4a8f"]},
+{id:"w2",n:"Second Write..",y:"2018",d:201809,c:["#e8a67a","#8f4a2b"]},
+{id:"sg",n:"지금 이 노래 (싱글)",y:"2018.12",d:201812,c:["#b79ae0","#4f2b8f"],single:1},
+{id:"nj",n:"A New Journey",y:"2019",d:201905,c:["#6fd0b0","#1f7a63"]},
+{id:"s2",n:"가을이 오면 (싱글)",y:"2019.11",d:201911,c:["#e8c36f","#8f6a1f"],single:1},
+{id:"wi",n:"With",y:"2021",d:202110,c:["#e88aa6","#8f2b4f"]},
+{id:"wt",n:"WHITREE",y:"2023",d:202311,c:["#d7d7d0","#6b6a66"]},
+{id:"sh",n:"눈부셨다 : Special Present (라이브)",y:"2024.06",d:202406,c:["#f2d36f","#b8791f"],single:1},
+{id:"by",n:"너의 남자 (싱글)",y:"2024.09",d:202409,c:["#6fb8e8","#1f5a8f"],single:1},
+{id:"tr",n:"Tree Ring",y:"2025",d:202507,c:["#9ccf6e","#3f6b1f"]},
+{id:"sy",n:"소년소녀 (싱글)",y:"2026.05",d:202605,c:["#e8786f","#8f2b2b"],single:1},
+{id:"x8",n:"2X8",y:"2026",d:202610,c:["#555","#111"]}];
+const A=Object.fromEntries(ALB.map(a=>[a.id,a]));
+const SONGS=[
+{t:"Write..",al:"w1",intro:1,a:["라이트","write"]},
+{t:"끄덕끄덕",al:"w1",a:["still i remember","nod nod"],h:["2016년에 발표된 곡","솔로 데뷔 미니앨범의 타이틀곡","제이윤(엠씨더맥스) 작곡 · 김이나 작사"]},
+{t:"그 사람",al:"w1",a:["passerby"]},{t:"향기",al:"w1",a:["nostalgia"]},{t:"Gravity",al:"w1",a:["그래비티"]},{t:"Stand by Me",al:"w1",a:["스탠드 바이 미"]},
+{t:"Second Write..",al:"w2",intro:1,a:["세컨드 라이트"]},
+{t:"너만 괜찮다면",al:"w2",a:["if only you are fine"],h:["2018년에 발표된 곡","두 번째 미니앨범의 타이틀곡","이별을 다룬 곡 · 7six9 music과 함께 작업"]},
+{t:"You’re My Lady",al:"w2",a:["youre my lady","유어 마이 레이디"]},
+{t:"I Swear",al:"w2",a:["아이 스웨어"]},{t:"Smile",al:"w2",a:["스마일"]},{t:"같은자리",al:"w2",a:["same place"]},
+{t:"사랑해",al:"w2",a:["i love you"],h:["2018년에 발표된 곡","두 번째 미니앨범의 마지막 트랙","팬들에게 전하고 싶은 마음을 담은 곡"]},
+{t:"지금 이 노래",al:"sg",also:["wi"],a:["a song for you"],h:["2018년 12월에 발표된 곡","디지털 싱글로 먼저 나온 곡","영어 제목은 A Song For You"]},
+{t:"A New Journey",al:"nj",intro:1,a:["어 뉴 저니"]},
+{t:"Hold On Me",al:"nj",a:["홀드 온 미"],h:["2019년에 발표된 곡","세 번째 미니앨범의 타이틀곡","주노플로가 피처링한 곡"]},
+{t:"Rain",al:"nj",a:["레인"]},{t:"Stranger",al:"nj",a:["스트레인저"]},{t:"Crying Baby",al:"nj",a:["크라잉 베이비"]},{t:"넌 나만 바라봐",al:"nj",a:["only look at me"]},{t:"Flower",al:"nj",a:["플라워"]},
+{t:"가을이 오면",al:"s2",a:["when fall comes"],h:["2019년 11월에 발표된 곡","두 번째 디지털 싱글","영어 제목은 When Fall Comes"]},
+{t:"With",al:"wi",intro:1,a:["위드"]},
+{t:"냉정과 열정 사이",al:"wi",a:["calm & passion","calm and passion"],h:["2021년에 발표된 곡","네 번째 미니앨범의 타이틀곡","R&B 팝 곡 · 영어 제목은 Calm & Passion"]},
+{t:"Lonely Night",al:"wi",a:["론리 나이트"]},{t:"오늘따라",al:"wi",a:["my diary","somehow"]},{t:"Alone",al:"wi",a:["얼론"]},
+{t:"Whitree",al:"wt",intro:1,a:["화이트리"]},
+{t:"Baby Baby",al:"wt",a:["베이비 베이비"],h:["2023년 11월에 발표된 곡","첫 정규앨범의 타이틀곡","캐럴을 연상시키는 시티 팝"]},
+{t:"미래에서",al:"wt",a:["from the future"]},{t:"Love Myself",al:"wt",a:["러브 마이셀프"]},{t:"California",al:"wt",a:["캘리포니아"]},{t:"불장난",al:"wt",a:["done"]},
+{t:"I’ll Be Alright",al:"wt",a:["ill be alright","아윌 비 올라잇"]},{t:"Save Us",al:"wt",a:["세이브 어스"]},{t:"Kiss Me If You Love Me",al:"wt",a:["키스 미 이프 유 러브 미"]},{t:"낙원",al:"wt",a:["my paradise"]},
+{t:"Baby Baby (Eng.)",al:"wt",a:["baby baby eng","baby baby english"]},
+{t:"눈부셨다",al:"sh",a:["sunshine"],h:["2024년 6월에 발표된 곡","라이브 앨범과 함께 공개된 새 곡","팬들에게 바치는 곡 · 영어 제목은 Sunshine"]},
+{t:"너의 남자",al:"by",a:["boyfriend"],h:["2024년 9월 21일에 발표된 곡","디지털 싱글","영어 제목은 Boyfriend"]},
+{t:"Only 직진",al:"tr",a:["only forward","온리직진"],h:["2025년에 발표된 곡","다섯 번째 미니앨범의 타이틀곡","앨범 전곡 작사·작곡에 참여"]},
+{t:"3분의 시간 뒤에는 돌아가야해",al:"tr",a:[]},{t:"널 만나고",al:"tr",a:["after i met you"]},{t:"조용히 내가 안아줄게요",al:"tr",a:[]},
+{t:"가혹해요",al:"tr",a:["harsh"],h:["2025년에 발표된 곡","Tree Ring 수록곡","식목일 콘서트에서 먼저 공개된 곡"]},
+{t:"소년소녀",al:"sy",also:["x8"],a:["boys and girls"],h:["2026년 5월에 발표된 디지털 싱글","솔로 데뷔 10주년 기념곡","인피니트 멤버들이 피처링"]},
+{t:"여백",al:"x8",intro:1,a:[],h:["2026년 정규 2집의 첫 번째 트랙","웅장한 오케스트라 연주로 문을 여는 곡","한자로는 餘白"]},
+{t:"DEVIL",al:"x8",a:["데빌"],h:["2026년 10월에 발표된 곡","두 번째 정규앨범의 타이틀곡","팝록 사운드와 빠른 댄스 비트"]},
+{t:"P.O.V",al:"x8",a:["pov","피오브이"]},{t:"View",al:"x8",a:["뷰"]},{t:"Sunset Road",al:"x8",a:["선셋 로드"]},{t:"CODENAME 3,2,1",al:"x8",a:["codename 321"]},
+{t:"Better Days",al:"x8",a:["베러 데이즈"]},{t:"Love Me",al:"x8",a:["러브 미"]},{t:"7 Days",al:"x8",a:["7days","세븐 데이즈"]},
+{t:"열 번째 페이지",al:"x8",a:[],h:["2026년 정규 2집의 10번 트랙","솔로 데뷔 10주년을 함께한 팬들을 향한 곡","제목에 책의 한 장이 들어가요"]},
+{t:"Color",al:"x8",a:["컬러"]},{t:"Click Click Boom!",al:"x8",a:["click click boom","클릭 클릭 붐"]},{t:"EVERYDAY",al:"x8",a:["에브리데이"]},
+{t:"그런 시간",al:"x8",a:[]},
+{t:"나무",al:"x8",a:["tree"],h:["2026년 정규 2집의 마지막 트랙","위로를 건네려는 마음을 담은 곡","제목은 두 글자"]}];
+$("cnt").textContent=`총 ${SONGS.length}곡 수록`;
+const GAMES=[
+{id:"album",n:"앨범 맞히기",d:"곡이 어느 앨범 수록곡인지 고르기 · 10문제"},
+{id:"cho",n:"초성 퀴즈",d:"초성을 보고 제목 맞히기 · 10문제"},
+{id:"hint",n:"힌트 추리",d:"힌트를 적게 볼수록 고득점 · 8문제"},
+{id:"order",n:"발매순 정렬",d:"앨범을 발매순으로 탭하기 · 5라운드"},
+{id:"ox",n:"O/X 퀴즈",d:"참과 거짓 판별하기 · 10문제, 문제당 12초"}];
+let nick="",db=null,uid=null,rows=[],myG={},covers={},tm=null;
+
+/* ---- 공통 ---- */
+function cover(a,small){const im=covers[a.id];return `<div class="cv" style="background-image:${im?`url(${im})`:`linear-gradient(135deg,${a.c[0]},${a.c[1]})`}">${im?"":`${a.n}<small>${a.y}</small>`}</div>`}
+function view(h){$("home").classList.add("hide");$("stage").classList.remove("hide");$("stage").innerHTML=h}
+function home(){clearInterval(tm);$("stage").classList.add("hide");$("home").classList.remove("hide");drawMenu()}
+function drawMenu(){$("menu").innerHTML=GAMES.map(g=>`<button class="gm" data-g="${g.id}"><b>${g.n}</b><span>${g.d}</span><br><i>내 최고 ${myG[g.id]||0}점</i></button>`).join("");
+  $("menu").querySelectorAll("button").forEach(b=>b.onclick=()=>start(b.dataset.g))}
+function start(g){
+  nick=$("nick").value.trim();
+  if(!nick){$("msg").textContent="닉네임을 먼저 입력해 주세요.";$("nick").focus();return}
+  $("msg").textContent="";({album,cho,hint,order,ox})[g]();
+}
+async function endGame(g,sc,note){
+  clearInterval(tm);sc=Math.max(0,Math.min(100,Math.round(sc)));
+  const prev=myG[g]||0;if(sc>prev)myG[g]=sc;
+  const total=Object.values(myG).reduce((a,b)=>a+b,0);
+  view(`<b>${GAMES.find(x=>x.id===g).n} 결과</b><div class="big">${sc}점</div><div class="mut" style="text-align:center">${note||""}${sc>prev?" · 최고 기록 갱신!":""}</div>
+  <div id="rk" style="text-align:center;font-weight:700;margin-top:8px"></div><div class="row"><button id="re">다시 하기</button><button class="g" id="hm">홈으로</button></div>`);
+  $("re").onclick=()=>start(g);$("hm").onclick=home;
+  if(!db||!uid){$("rk").textContent="이 환경에서는 순위가 저장되지 않아요.";return}
+  try{
+    await db.doc("scores/"+uid).set({name:nick.slice(0,12),g:myG,total,updated:Date.now()});
+    const s=await db.collection("scores").limit(500).get();
+    const l=s.docs.map(d=>((d.data().g||{})[g])||0).filter(x=>x>0);
+    const b=myG[g]||0;
+    $("rk").textContent=`내 최고 ${b}점 · 현재 ${l.filter(x=>x>b).length+1}위 / ${l.length}명`;
+  }catch(e){$("rk").textContent="순위 저장에 실패했어요."}
+}
+
+/* ---- 객관식/주관식 러너 ---- */
+function quiz(g,items,sec){
+  let i=0,sc=0,hits=0;
+  const per=100/items.length;
+  function show(){
+    if(i>=items.length)return endGame(g,sc,`${hits} / ${items.length} 정답`);
+    const it=items[i];
+    $("stage").innerHTML=`<div class="mut">${i+1} / ${items.length} · 점수 ${Math.round(sc)}</div><div class="big" id="tt">${sec}</div><div class="bar"><i id="tb"></i></div>
+    <div class="q">${it.q}</div>${it.o?`<div class="opts">${it.o.map((o,k)=>`<button class="g" data-k="${k}">${o}</button>`).join("")}</div>`:`<input type="text" id="in" autocomplete="off" placeholder="제목 입력"><div class="row"><button id="ok">제출</button><button class="g" id="pass">패스</button></div>`}<div id="fb" style="margin-top:10px;font-weight:700"></div>`;
+    let done=false;const t0=Date.now();
+    const fin=(ok,why)=>{
+      if(done)return;done=true;clearInterval(tm);
+      const left=Math.max(0,sec-(Date.now()-t0)/1000);
+      if(ok){hits++;sc+=per*(0.6+0.4*left/sec)}
+      $("fb").innerHTML=ok?`<span class="ok">정답! 🎉</span> · ${it.ans}`:`<span class="bad">${why||"오답"}</span> · 정답: ${it.ans}`;
+      document.querySelectorAll("#stage button, #stage input").forEach(x=>x.disabled=true);
+      let au,c=3;const lbl=i+1>=items.length?"결과 보기":"다음 문제";const go=()=>{clearInterval(au);i++;show()};const n=document.createElement("button");const tx=()=>n.textContent=`${lbl} · ${c}초 뒤 자동 이동`;tx();n.style.marginTop="10px";n.disabled=false;n.onclick=go;$("fb").appendChild(document.createElement("br"));$("fb").appendChild(n);au=setInterval(()=>{c--;if(c<=0)go();else tx()},1000);
+    };
+    if(it.o)document.querySelectorAll(".opts button").forEach(b=>b.onclick=()=>fin(it.ok(+b.dataset.k)));
+    else{$("ok").onclick=()=>{const v=norm($("in").value);if(v)fin(it.ok(v))};$("pass").onclick=()=>fin(false,"패스");$("in").onkeydown=e=>{if(e.key==="Enter")$("ok").click()};$("in").focus()}
+    clearInterval(tm);tm=setInterval(()=>{const l=Math.max(0,sec-(Date.now()-t0)/1000);$("tt").textContent=Math.ceil(l);$("tb").style.width=l/sec*100+"%";if(l<=0)fin(false,"시간 초과")},200);
+  }
+  view("");show();
+}
+
+/* ---- 게임들 ---- */
+function album(){
+  const pool=SONGS.filter(s=>!s.intro);
+  quiz("album",sh(pool).slice(0,10).map(s=>{
+    const ids=[s.al,...(s.also||[])];
+    const opts=sh([A[ids[0]],...sh(ALB.filter(a=>!ids.includes(a.id))).slice(0,3)]);
+    return {q:`「${s.t}」이 수록된 곳은?`,o:opts.map(a=>`${a.n} (${a.y})`),ok:k=>ids.includes(opts[k].id),ans:ids.map(i=>`${A[i].n} (${A[i].y})`).join(" / ")};
+  }),15);
+}
+const CHO=["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
+const cho1=s=>[...s].map(c=>{const n=c.charCodeAt(0)-0xAC00;return n>=0&&n<11172?CHO[n/588|0]:c}).join("");
+function cho(){
+  const pool=SONGS.filter(s=>/^[가-힣\s]+$/.test(s.t)&&s.t.replace(/\s/g,"").length<=9);
+  quiz("cho",sh(pool).slice(0,10).map(s=>({q:`${cho1(s.t)}<div class="mut" style="font-weight:400">${s.t.replace(/\s/g,"").length}글자 · ${A[s.al].y}년 발표</div>`,ok:v=>[s.t,...s.a].some(x=>norm(x)===v),ans:s.t})),20);
+}
+function hint(){
+  const items=sh(SONGS.filter(s=>s.h)).slice(0,8);let i=0,sc=0,hits=0;
+  function show(){
+    if(i>=items.length)return endGame("hint",sc*100/96,`${hits} / ${items.length} 정답`);
+    const s=items[i];let n=1,done=false;
+    const draw=()=>{$("stage").innerHTML=`<div class="mut">${i+1} / ${items.length} · 점수 ${sc}</div><div class="q">이 곡은 무엇일까요?</div>
+    <ol>${s.h.slice(0,n).map(h=>`<li>${h}</li>`).join("")}</ol><div class="mut">지금 정답이면 +${[12,8,4][n-1]}점</div>
+    <input type="text" id="in" autocomplete="off" placeholder="제목 입력" style="margin-top:8px"><div class="row"><button id="ok">제출</button><button class="g" id="more" ${n>=3?"disabled":""}>힌트 더 보기</button><button class="g" id="pass">패스</button></div><div id="fb" style="margin-top:10px;font-weight:700"></div>`;
+      $("in").focus();$("more").onclick=()=>{n++;draw()};
+      const fin=ok=>{if(done)return;done=true;if(ok){hits++;sc+=[12,8,4][n-1]}
+        $("fb").innerHTML=(ok?`<span class="ok">정답! 🎉</span> · ${s.t}`:`<span class="bad">아쉬워요</span> · 정답: ${s.t}`)+`<div class="mut" style="font-weight:400">${s.h.join(" / ")}</div>`;
+        let au,c=3;const lbl=i+1>=items.length?"결과 보기":"다음 문제";const go=()=>{clearInterval(au);i++;show()};const b=document.createElement("button");const tx=()=>b.textContent=`${lbl} · ${c}초 뒤 자동 이동`;tx();b.style.marginTop="10px";b.onclick=go;$("fb").appendChild(b);au=setInterval(()=>{c--;if(c<=0)go();else tx()},1000);
+        document.querySelectorAll("#ok,#more,#pass,#in").forEach(x=>x.disabled=true)};
+      $("ok").onclick=()=>{const v=norm($("in").value);if(v)fin([s.t,...s.a].some(x=>norm(x)===v))};
+      $("pass").onclick=()=>fin(false);$("in").onkeydown=e=>{if(e.key==="Enter")$("ok").click()};
+    };draw();
+  }
+  view("");show();
+}
+function order(){
+  let r=0,sc=0;
+  function round(){
+    if(r>=5)return endGame("order",sc,"5라운드 완료");
+    const set=sh(ALB).slice(0,4),want=set.slice().sort((a,b)=>a.d-b.d);let k=0,wrong=0;
+    $("stage").innerHTML=`<div class="mut">라운드 ${r+1} / 5 · 점수 ${sc}</div><div class="q">오래된 앨범부터 순서대로 탭하세요</div>
+    <div class="oc">${set.map(a=>`<div data-i="${a.id}">${cover(a)}</div>`).join("")}</div><div id="fb" style="margin-top:10px;font-weight:700"></div>`;
+    document.querySelectorAll(".oc>div").forEach(d=>d.onclick=()=>{
+      if(d.classList.contains("used"))return;
+      if(d.dataset.i===want[k].id){d.classList.add("used");d.querySelector(".cv").insertAdjacentText("beforeend","");k++;
+        $("fb").textContent=`${k}번째 ✓ (${want[k-1].y})`;
+        if(k===4){sc+=Math.max(4,20-wrong*5);r++;setTimeout(round,900)}}
+      else{wrong++;$("fb").innerHTML=`<span class="bad">앗, 아니에요</span>`}
+    });
+  }
+  view("");round();
+}
+function ox(){
+  const yr=a=>a.y.slice(0,4),ys=[...new Set(ALB.map(yr))];
+  const pool=SONGS.filter(s=>!s.intro);
+  const pick=()=>pool[Math.random()*pool.length|0];
+  const ids=s=>[s.al,...(s.also||[])];
+  const mk=()=>{
+    const t=Math.random()*3|0,truth=Math.random()<.5;
+    if(t===0){const s=pick(),al=truth?A[sh(ids(s))[0]]:sh(ALB.filter(a=>!ids(s).includes(a.id)))[0];
+      return {q:`「${s.t}」은(는) <b>${al.n}</b> 수록곡이다`,truth,ex:`${s.t} → ${ids(s).map(i=>A[i].n).join(" / ")}`}}
+    if(t===1){const s=pick(),y0=ids(s).map(i=>yr(A[i])),y=truth?sh(y0)[0]:sh(ys.filter(x=>!y0.includes(x)))[0];
+      return {q:`「${s.t}」은(는) <b>${y}년</b>에 발표됐다`,truth,ex:`${s.t} → ${ids(s).map(i=>A[i].y+"년").join(" / ")}`}}
+    const [a,b]=sh(ALB).slice(0,2),early=a.d<b.d?a:b,late=early===a?b:a,f=truth?early:late,o=truth?late:early;
+    return {q:`<b>${f.n}</b>은(는) <b>${o.n}</b>보다 먼저 발매됐다`,truth,ex:`${early.n}(${early.y}) → ${late.n}(${late.y})`}
+  };
+  const seen=new Set(),items=[];
+  while(items.length<10){const m=mk();if(seen.has(m.q))continue;seen.add(m.q);
+    items.push({q:m.q,o:["⭕ O","❌ X"],ok:k=>(k===0)===m.truth,ans:(m.truth?"O":"X")+" · "+m.ex})}
+  quiz("ox",items,12);
+}
+
+/* ---- 커버 업로드 ---- */
+$("up").innerHTML=ALB.filter(a=>!a.single).map(a=>`<label class="mut" style="display:block;margin:6px 0">${a.n}: <input type="file" accept="image/*" data-a="${a.id}"></label>`).join("");
+$("up").querySelectorAll("input").forEach(inp=>inp.onchange=()=>{const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{covers[inp.dataset.a]=r.result};r.readAsDataURL(f)});
+
+/* ---- 순위표 ---- */
+let curTab="album";
+function drawTabs(){$("tabs").innerHTML="";GAMES.forEach(g=>{const b=document.createElement("button");b.textContent=g.n;b.className=g.id===curTab?"":"g";b.style.padding="6px 10px";b.style.fontSize="13px";b.onclick=()=>{curTab=g.id;drawTabs();renderLb()};$("tabs").appendChild(b)})}
+function renderLb(){
+  const list=rows.map(r=>({id:r.id,name:r.name,s:(r.g||{})[curTab]||0})).filter(r=>r.s>0).sort((a,b)=>b.s-a.s).slice(0,20);
+  if(!list.length){$("lb").textContent="이 게임은 아직 기록이 없어요. 첫 기록을 남겨 보세요!";return}
+  const t=document.createElement("table");t.innerHTML="<tr><th>순위</th><th>닉네임</th><th class='n'>최고점</th></tr>";
+  let rank=0,prev=null;
+  list.forEach((r,i)=>{if(r.s!==prev){rank=i+1;prev=r.s}
+    const tr=document.createElement("tr");if(r.id===uid)tr.className="me";
+    [rank+"위",r.name||"익명",r.s].forEach((v,k)=>{const td=document.createElement("td");if(k===2)td.className="n";td.textContent=v;tr.appendChild(td)});t.appendChild(tr)});
+  $("lb").textContent="";$("lb").appendChild(t);
+}
+drawTabs();drawMenu();
+(async()=>{
+  const to=setTimeout(()=>{if($("lb").textContent.startsWith("불러오는"))$("lb").textContent="순위표를 아직 불러오지 못했어요. 이 환경에서는 표시되지 않을 수 있어요."},10000);
+  try{
+    if(!window.claude)throw 0;
+    const user=await claude.use("user");db=await claude.use("db");
+    if(!db){$("lb").textContent="순위표는 로그인한 상태에서만 볼 수 있어요.";return}
+    if(user)uid=await user.id();
+    db.collection("scores").limit(500).onSnapshot(s=>{
+      clearTimeout(to);rows=s.docs.map(d=>({id:d.id,...d.data()}));
+      const me=rows.find(r=>r.id===uid);if(me&&me.g){myG={...me.g,...myG};drawMenu()}
+      renderLb();
+    },()=>{$("lb").textContent="순위표를 불러오지 못했어요."});
+  }catch(e){$("lb").textContent="순위표를 사용할 수 없는 환경이에요."}
+})();
+</script>
+</body>
+</html>
