@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>남우현 퀴즈 파크</title>
+<title>우현마을</title>
 <style>
 :root{--trunk:#7a5a3a;--ground:#dfe6d2;--sky2:#cfe3ef;--sky:#eef4ea;--bg:#f7f6f2;--card:#F1F6E9;--tx:#1d1d1b;--mut:#6b6a66;--ac:#3b6ee0;--ok:#1f9d55;--bad:#d64545;--bd:#c9d8b2;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17181b;--card:#222428;--tx:#f0efea;--mut:#9a9992;--ac:#7ba2ff;--ok:#4cc27f;--bad:#ef7a7a;--bd:#34363c;--trunk:#a07c58;--ground:#2a3326;--sky2:#101820;--sky:#1d2420;color-scheme:dark}}
@@ -93,7 +93,7 @@ a.yt{display:inline-flex;align-items:center;justify-content:center;width:48px;he
 </head>
 <body class="tree-on">
 <main>
-<h1>🌳 남우현 퀴즈 파크</h1>
+<h1>🌳 우현마을</h1>
 <p class="s"><span id="cnt"></span> · 순위는 게임별 최고점으로 매겨져요</p>
 
 <section id="home">
@@ -111,7 +111,7 @@ a.yt{display:inline-flex;align-items:center;justify-content:center;width:48px;he
 </div></div>
 <div id="gt" class="hide" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-weight:700;font-size:19px;margin:6px 2px 10px"><span id="gtt"></span><button class="g" id="gtHome" style="padding:6px 12px;font-size:14px;white-space:nowrap">🌳 나무로 돌아가기</button></div>
 <section id="mvPage" class="hide">
-<div class="card"><div class="mut" id="mvNote"></div></div>
+<div class="card"><div class="mut" id="mvNote"></div><div id="mvTabs" class="row"></div></div>
 <div id="mvList"></div>
 </section>
 <section id="rankPage" class="hide">
@@ -230,7 +230,7 @@ const LEAF_POS=[[205,445,6,-1],[355,420,-6,1],[190,335,-4,-1],[370,310,5,1],[205
 function drawMenu(){
   const SH={album:"앨범 맞히기",cho:"초성 퀴즈",hint:"힌트 추리",order:"발매순 정렬",ox:"O/X 퀴즈",musical:"뮤지컬 퀴즈"};
   const items=GAMES.map(g=>({id:g.id,t:SH[g.id],sub:"최고 "+(myG[g.id]||0)+"점",d:g.d,fn:()=>start(g.id),aria:SH[g.id]+", 내 최고 "+(myG[g.id]||0)+"점"}))
-    .concat([{id:"rank",t:"전체 순위",sub:"🏆 순위 보기",d:"게임별 순위표를 확인해요",fn:openLb,aria:"전체 순위 보기",grad:"lg2"},{id:"mv",t:"뮤직비디오",sub:"🎬 MV 보기",d:"공식 뮤직비디오 모음",fn:openMv,aria:"뮤직비디오 보기",grad:"lg3"}]);
+    .concat([{id:"rank",t:"전체 순위",sub:"🏆 순위 보기",d:"게임별 순위표를 확인해요",fn:openLb,aria:"전체 순위 보기",grad:"lg2"},{id:"mv",t:"영상자료",sub:"🎬 영상 보기",d:"공식 영상 모음",fn:openMv,aria:"영상자료 보기",grad:"lg3"}]);
   let seed=7;const R=()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
   const f=n=>n.toFixed(1),CX=280,GY=668,pts=[];
   const tx=y=>CX+Math.sin(y/90)*5;
@@ -533,12 +533,14 @@ function okNick(){const v=$("nick").value.trim().slice(0,12);if(!v){$("msg").tex
 $("nickOk").onclick=okNick;$("nick").onkeydown=e=>{if(e.key==="Enter")okNick()};
 const MVS=[["Only 직진","69W1qtlFLh8"],["DEVIL","zAgbhCtfdWI"],["눈부셨다","jUQPD8rDHwA"],["Baby Baby","y7x5uPkcKv0"],["가을이 오면","vzFF-boVVVk"],["Hold On Me","oVh49Q9fz68"],["너만 괜찮다면","BQs6jUlRpY4"],["끄덕끄덕","cVtcn6ptjmE"]];
 const CAN_EMBED=!window.claude;
-const MVS2=[["넌 나의 Destiny","4alsAG3_3t0","OST · 스피릿 핑거스 Part.3","2025"],["Shooting Star","uS5DsnRgmpg","OST · 별똥별 Part.1",""],["FULL MOON (with 남우현)","A-EcTULDu8Q","권순관",""],["선인장","B9r19gxg6PM","수록: re;code Episode II · 심규선과의 듀엣","2013"],["Hope","zCzoQkQzJN4","OST · 엘소드 청",""],["불꽃놀이","tOz6wMyxPHw","KBS 리슨업(Listen-Up) · Prod. 픽보이(Peakboy)","2022"]];
+const MVS2=[["선인장","B9r19gxg6PM","수록: re;code Episode II · 심규선과의 듀엣","2013",201300],["Shooting Star","uS5DsnRgmpg","OST · 별똥별 Part.1","2022",202200],["불꽃놀이","tOz6wMyxPHw","KBS 리슨업(Listen-Up) · Prod. 픽보이(Peakboy)","2022",202208],["Hope","zCzoQkQzJN4","OST · 엘소드 청","2023",202300],["FULL MOON (with 남우현)","A-EcTULDu8Q","권순관","2025",202500],["넌 나의 Destiny","4alsAG3_3t0","OST · 스피릿 핑거스 Part.3","2025",202511]];
+let mvTab="mv";
+const MVS3=[["남자는 여자를 귀찮게 해","BdtYf26Uh10","KBS 불후의 명곡 레전드 · 2011.10.01","2011",20111001],["추억 만들기","l5EgFLRdt98","KBS 불후의 명곡 레전드 · 2011.11.12","2011",20111112],["편지할게요","OXfiFEFgAqE","KBS 불후의 명곡 레전드 · 2011.10.08","2011",20111008],["사랑했지만","PQHFFnm9I9k","KBS 불후의 명곡 레전드 · 2011.10.15","2011",20111015],["내 사랑 울보","GIxyv63Pq14","KBS 불후의 명곡 레전드 · 2011.10.22","2011",20111022],["어쩌다 마주친 그대","8UhUWuwitts","KBS 불후의 명곡 레전드 · 2011.10.29","2011",20111029],["열정","-fihKiJ9fhU","KBS 불후의 명곡 레전드 · 2011.11.05","2011",20111105],["해 뜰 날 (INFINITE)","HLIt9mHv4cI","KBS 불후의 명곡 레전드 · 송대관 편 · 2012.12.22","2012",20121222],["마지막 약속","cq-QgcAr31w","불후의 명곡 · 순수한 감성 무대 · 2016.06.04","2016",20160604],["알 수 없는 이별","NBzItGgVhqI","불후의 명곡 · 숨막히는 감동 무대 · 2016.07.09","2016",20160709],["영영 (양수경 & 남우현)","6ZJ2Yhk6Yv4","KBS 불후의 명곡2 · 2017.04.22","2017",20170422],["다시 와주라","s_QrJQvHtRE","KBS 불후의 명곡2 · 전설을 노래하다 · 2021.11.06","2021",20211106],["생각이 나","Sf6N4V1HUvA","KBS 불후의 명곡2 · 전설을 노래하다 · 2023.12.23","2023",20231223],["생각이 나 (세로직캠)","VGZ59Hd5PRE","KBS 불후의 명곡2 · 전설을 노래하다 · 2023.12.23","2023",20231223]];
 function drawMv(){
   $("mvNote").textContent=CAN_EMBED?"제목을 누르면 영상이 펼쳐지고 바로 재생돼요. 재생이 안 되면 영상 아래 '유튜브에서 보기'를 눌러 주세요.":"제목을 누르면 펼쳐져요. 영상 아래 '유튜브에서 보기'를 누르면 유튜브가 새 탭에서 열려요.";
   const info=m=>{const s=SONGS.find(x=>x.t===m[0]);return {al:s?A[s.al].n:"",d:s?A[s.al].d:0,y:s?A[s.al].y.slice(0,4):""}};
-  const list=MVS.map(m=>({t:m[0],id:m[1],...info(m),sub:"수록: "+(info(m).al)})).sort((a,b)=>b.d-a.d);
-  const list2=MVS2.map(m=>({t:m[0],id:m[1],sub:m[2],y:m[3]}));
+  const list=MVS.map(m=>({t:m[0],id:m[1],...info(m),sub:"수록: "+(info(m).al)})).sort((a,b)=>a.d-b.d);
+  const list2=MVS2.map(m=>({t:m[0],id:m[1],sub:m[2],y:m[3],d:m[4]})).sort((a,b)=>a.d-b.d);
   $("mvList").innerHTML="";
   const closeAll=()=>document.querySelectorAll("#mvList .card").forEach(c=>{c.classList.remove("open");c.querySelector(".mvh").setAttribute("aria-expanded","false");c.querySelector(".vbox").innerHTML=""});
   const add=m=>{
@@ -556,10 +558,13 @@ function drawMv(){
       box.innerHTML=html};
     c.append(h,box);$("mvList").appendChild(c)};
   const head=t=>{const d=document.createElement("div");d.className="mvgrp";d.textContent=t;$("mvList").appendChild(d)};
-  head("뮤직비디오");list.forEach(add);
-  head("OST · 참여곡");list2.forEach(add);
+  const list3=MVS3.map(m=>({t:m[0],id:m[1],sub:m[2],y:m[3],d:m[4]})).sort((a,b)=>a.d-b.d);
+  const tabs=[["mv","뮤직비디오",list],["ost","OST · 참여곡",list2],["bmg","불후의 명곡",list3]];
+  $("mvTabs").innerHTML="";
+  tabs.forEach(t=>{const b=document.createElement("button");b.textContent=t[1];b.className=t[0]===mvTab?"":"g";b.style.padding="6px 10px";b.style.fontSize="13px";b.onclick=()=>{mvTab=t[0];drawMv()};$("mvTabs").appendChild(b)});
+  tabs.find(t=>t[0]===mvTab)[2].forEach(add);
 }
-function openMv(){document.body.classList.remove("tree-on");$("home").classList.add("hide");$("mvPage").classList.remove("hide");$("gtt").textContent="🎬 뮤직비디오";$("gt").classList.remove("hide");window.scrollTo(0,0);drawMv()}
+function openMv(){document.body.classList.remove("tree-on");$("home").classList.add("hide");$("mvPage").classList.remove("hide");$("gtt").textContent="🎬 영상자료";$("gt").classList.remove("hide");window.scrollTo(0,0);drawMv()}
 function openLb(){document.body.classList.remove("tree-on");$("home").classList.add("hide");$("rankPage").classList.remove("hide");$("gtt").textContent="🏆 전체 순위";$("gt").classList.remove("hide");window.scrollTo(0,0);renderLb()}
 $("gtHome").onclick=()=>home();
 {const im=new Image();im.onload=()=>{$("photo").style.backgroundImage='url("tree.jpg")';$("home").classList.add("photo")};im.src="tree.jpg"}
