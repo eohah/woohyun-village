@@ -23,24 +23,18 @@ input[type=text]{width:100%;font:inherit;padding:10px 12px;border-radius:10px;bo
 .ok{color:var(--ok)}.bad{color:var(--bad)}.hide{display:none}.opts{display:grid;gap:8px;margin-top:10px}
 .q{font-size:20px;font-weight:700;text-align:center;margin:10px 0}
 .cv{border-radius:10px;aspect-ratio:1/1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;text-align:center;padding:6px;font-weight:700;background-size:cover;background-position:center;text-shadow:0 1px 4px rgba(0,0,0,.5);font-size:14px}.cv small{font-weight:400;opacity:.9}
-.cards{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}
-.cd{aspect-ratio:1/1;border-radius:10px;border:1px solid var(--bd);background:var(--card);color:var(--tx);display:flex;align-items:center;justify-content:center;text-align:center;padding:4px;font-size:12px;font-weight:700;cursor:pointer;overflow:hidden}
-.cd.back{background:var(--ac);color:#fff;font-size:22px}.cd.done{opacity:.5;cursor:default}
-.oc{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:10px}.oc .cv{cursor:pointer;font-size:12px}.oc .used{opacity:.3}
 table{width:100%;border-collapse:collapse;font-size:14px}td,th{padding:6px 4px;border-bottom:1px solid var(--bd);text-align:left}th{color:var(--mut);font-weight:500}td.n,th.n{text-align:right}tr.me{font-weight:700;color:var(--ac)}
 </style>
 </head>
 <body>
 <main>
 <h1>🎵 남우현 퀴즈 파크</h1>
-<p class="s">소리 없이 즐기는 5가지 게임 · <span id="cnt"></span> · 순위는 게임별 최고점으로 매겨져요</p>
+<p class="s"><span id="cnt"></span> · 순위는 게임별 최고점으로 매겨져요</p>
 
 <section id="home">
-<div class="card"><input type="text" id="nick" maxlength="12" placeholder="닉네임 (순위표에 표시)"><div class="mut" id="msg" style="margin-top:6px"></div></div>
+<div class="card" id="nickCard"><input type="text" id="nick" maxlength="12" placeholder="닉네임 (순위표에 표시)"><div class="mut" id="msg" style="margin-top:6px"></div></div>
 <div class="grid" id="menu"></div>
 <div class="card" style="margin-top:14px"><b>🏆 게임별 순위</b><div id="tabs" class="row"></div><div id="lb" class="mut" style="margin-top:8px">불러오는 중…</div></div>
-<details class="card"><summary class="mut" style="cursor:pointer">앨범 커버 이미지 넣기 (선택)</summary>
-<p class="mut">실제 커버는 이 페이지에 내장할 수 없어서 기본은 색 카드예요. 가지고 있는 이미지를 고르면 이 브라우저에서만 적용돼요.</p><div id="up"></div></details>
 </section>
 
 <section id="stage" class="card hide"></section>
@@ -50,18 +44,18 @@ const $=id=>document.getElementById(id);
 const sh=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
 const norm=s=>s.toLowerCase().replace(/[\s’'`.,!?()\-_·~:]/g,"");
 const ALB=[
-{id:"w1",n:"Write..",y:"2016",d:201605,c:["#7aa6e8","#2b4a8f"]},
-{id:"w2",n:"Second Write..",y:"2018",d:201809,c:["#e8a67a","#8f4a2b"]},
-{id:"sg",n:"지금 이 노래 (싱글)",y:"2018.12",d:201812,c:["#b79ae0","#4f2b8f"],single:1},
-{id:"nj",n:"A New Journey",y:"2019",d:201905,c:["#6fd0b0","#1f7a63"]},
-{id:"s2",n:"가을이 오면 (싱글)",y:"2019.11",d:201911,c:["#e8c36f","#8f6a1f"],single:1},
-{id:"wi",n:"With",y:"2021",d:202110,c:["#e88aa6","#8f2b4f"]},
-{id:"wt",n:"WHITREE",y:"2023",d:202311,c:["#d7d7d0","#6b6a66"]},
-{id:"sh",n:"눈부셨다 : Special Present (라이브)",y:"2024.06",d:202406,c:["#f2d36f","#b8791f"],single:1},
-{id:"by",n:"너의 남자 (싱글)",y:"2024.09",d:202409,c:["#6fb8e8","#1f5a8f"],single:1},
-{id:"tr",n:"Tree Ring",y:"2025",d:202507,c:["#9ccf6e","#3f6b1f"]},
-{id:"sy",n:"소년소녀 (싱글)",y:"2026.05",d:202605,c:["#e8786f","#8f2b2b"],single:1},
-{id:"x8",n:"2X8",y:"2026",d:202610,c:["#555","#111"]}];
+{id:"w1",n:"Write..",y:"2016",d:201605},
+{id:"w2",n:"Second Write..",y:"2018",d:201809},
+{id:"sg",n:"지금 이 노래 (싱글)",y:"2018.12",d:201812,single:1},
+{id:"nj",n:"A New Journey",y:"2019",d:201905},
+{id:"s2",n:"가을이 오면 (싱글)",y:"2019.11",d:201911,single:1},
+{id:"wi",n:"With",y:"2021",d:202110},
+{id:"wt",n:"WHITREE",y:"2023",d:202311},
+{id:"sh",n:"눈부셨다 : Special Present (라이브)",y:"2024.06",d:202406,single:1},
+{id:"by",n:"너의 남자 (싱글)",y:"2024.09",d:202409,single:1},
+{id:"tr",n:"Tree Ring",y:"2025",d:202507},
+{id:"sy",n:"소년소녀 (싱글)",y:"2026.05",d:202605,single:1},
+{id:"x8",n:"2X8",y:"2026",d:202610}];
 const A=Object.fromEntries(ALB.map(a=>[a.id,a]));
 const SONGS=[
 {t:"Write..",al:"w1",intro:1,a:["라이트","write"]},
@@ -99,25 +93,52 @@ const SONGS=[
 {t:"Color",al:"x8",a:["컬러"]},{t:"Click Click Boom!",al:"x8",a:["click click boom","클릭 클릭 붐"]},{t:"EVERYDAY",al:"x8",a:["에브리데이"]},
 {t:"그런 시간",al:"x8",a:[]},
 {t:"나무",al:"x8",a:["tree"],h:["2026년 정규 2집의 마지막 트랙","위로를 건네려는 마음을 담은 곡","제목은 두 글자"]}];
-$("cnt").textContent=`총 ${SONGS.length}곡 수록`;
+$("cnt").textContent=`총 ${SONGS.length}곡 수록 · 문제당 15초`;
 const GAMES=[
 {id:"album",n:"앨범 맞히기",d:"곡이 어느 앨범 수록곡인지 고르기 · 10문제"},
-{id:"cho",n:"초성 퀴즈",d:"초성을 보고 제목 맞히기 · 10문제"},
+{id:"cho",n:"초성 퀴즈",d:"초성을 보고 제목 맞히기 · 힌트 보기 가능 · 10문제"},
 {id:"hint",n:"힌트 추리",d:"힌트를 적게 볼수록 고득점 · 8문제"},
-{id:"order",n:"발매순 정렬",d:"앨범을 발매순으로 탭하기 · 5라운드"},
-{id:"ox",n:"O/X 퀴즈",d:"참과 거짓 판별하기 · 10문제, 문제당 12초"}];
-let nick="",db=null,uid=null,rows=[],myG={},covers={},tm=null;
+{id:"order",n:"발매순 정렬",d:"발매순·역순·트랙 순서를 섞어 골라 제출 · 부분 점수 · 5라운드"},
+{id:"ox",n:"O/X 퀴즈",d:"참과 거짓 판별하기 · 10문제"},
+{id:"musical",n:"뮤지컬 종합 퀴즈",d:"객관식·O/X·초성·출연 횟수가 섞인 뮤지컬 문제 · 10문제"}];
+let nick="",db=null,uid=null,rows=[],myG={},tm=null;
+try{nick=localStorage.getItem("wh-nick")||""}catch(e){}
+let canEdit=!!nick; // 페이지에 다시 접속했을 때만 변경 가능
+function saveNick(v){
+  nick=v;canEdit=false;try{localStorage.setItem("wh-nick",nick)}catch(e){}
+  if(db&&uid&&rows.some(r=>r.id===uid)){
+    const total=Object.values(myG).reduce((a,b)=>a+b,0);
+    db.doc("scores/"+uid).set({name:nick,g:myG,total,updated:Date.now()}).catch(()=>{});
+  }
+  drawNick();
+}
+function drawNick(edit){
+  if(!nick)return;const c=$("nickCard");c.innerHTML="";
+  if(edit){
+    const i=document.createElement("input");i.type="text";i.maxLength=12;i.value=nick;
+    const r=document.createElement("div");r.className="row";
+    const s=document.createElement("button");s.textContent="저장";
+    const x=document.createElement("button");x.className="g";x.textContent="취소";
+    s.onclick=()=>{const v=i.value.trim().slice(0,12);if(v)saveNick(v)};
+    x.onclick=()=>drawNick();
+    r.append(s,x);c.append(i,r);i.focus();return;
+  }
+  const b=document.createElement("b");b.textContent=nick;c.append("닉네임 · ",b);
+  if(canEdit){const e=document.createElement("button");e.className="g";e.textContent="변경";e.style.cssText="margin-left:10px;padding:4px 10px;font-size:13px";e.onclick=()=>drawNick(true);c.appendChild(e)}
+  const m=document.createElement("div");m.className="mut";m.textContent=canEdit?"모든 게임에 적용돼요 · 지금 변경할 수 있어요":"모든 게임에 적용돼요 · 닉네임은 다음에 다시 접속할 때 변경할 수 있어요";c.appendChild(m);
+}
 
 /* ---- 공통 ---- */
-function cover(a,small){const im=covers[a.id];return `<div class="cv" style="background-image:${im?`url(${im})`:`linear-gradient(135deg,${a.c[0]},${a.c[1]})`}">${im?"":`${a.n}<small>${a.y}</small>`}</div>`}
 function view(h){$("home").classList.add("hide");$("stage").classList.remove("hide");$("stage").innerHTML=h}
 function home(){clearInterval(tm);$("stage").classList.add("hide");$("home").classList.remove("hide");drawMenu()}
 function drawMenu(){$("menu").innerHTML=GAMES.map(g=>`<button class="gm" data-g="${g.id}"><b>${g.n}</b><span>${g.d}</span><br><i>내 최고 ${myG[g.id]||0}점</i></button>`).join("");
   $("menu").querySelectorAll("button").forEach(b=>b.onclick=()=>start(b.dataset.g))}
 function start(g){
-  nick=$("nick").value.trim();
-  if(!nick){$("msg").textContent="닉네임을 먼저 입력해 주세요.";$("nick").focus();return}
-  $("msg").textContent="";({album,cho,hint,order,ox})[g]();
+  if(!nick){
+    const v=$("nick").value.trim().slice(0,12);
+    if(!v){$("msg").textContent="닉네임을 먼저 입력해 주세요.";$("nick").focus();return}
+    saveNick(v);
+  }({album,cho,hint,order,ox,musical})[g]();
 }
 async function endGame(g,sc,note){
   clearInterval(tm);sc=Math.max(0,Math.min(100,Math.round(sc)));
@@ -144,7 +165,7 @@ function quiz(g,items,sec){
     if(i>=items.length)return endGame(g,sc,`${hits} / ${items.length} 정답`);
     const it=items[i];
     $("stage").innerHTML=`<div class="mut">${i+1} / ${items.length} · 점수 ${Math.round(sc)}</div><div class="big" id="tt">${sec}</div><div class="bar"><i id="tb"></i></div>
-    <div class="q">${it.q}</div>${it.o?`<div class="opts">${it.o.map((o,k)=>`<button class="g" data-k="${k}">${o}</button>`).join("")}</div>`:`<input type="text" id="in" autocomplete="off" placeholder="제목 입력"><div class="row"><button id="ok">제출</button><button class="g" id="pass">패스</button></div>`}<div id="fb" style="margin-top:10px;font-weight:700"></div>`;
+    <div class="q">${it.q}</div>${it.o?`<div class="opts">${it.o.map((o,k)=>`<button class="g" data-k="${k}">${o}</button>`).join("")}</div>`:`<input type="text" id="in" autocomplete="off" placeholder="제목 입력"><div class="row"><button id="ok">제출</button>${it.hint?'<button class="g" id="hb">힌트 보기</button>':''}<button class="g" id="pass">패스</button></div><div id="hn" class="mut" style="margin-top:8px"></div>`}<div id="fb" style="margin-top:10px;font-weight:700"></div>`;
     let done=false;const t0=Date.now();
     const fin=(ok,why)=>{
       if(done)return;done=true;clearInterval(tm);
@@ -155,7 +176,7 @@ function quiz(g,items,sec){
       let au,c=3;const lbl=i+1>=items.length?"결과 보기":"다음 문제";const go=()=>{clearInterval(au);i++;show()};const n=document.createElement("button");const tx=()=>n.textContent=`${lbl} · ${c}초 뒤 자동 이동`;tx();n.style.marginTop="10px";n.disabled=false;n.onclick=go;$("fb").appendChild(document.createElement("br"));$("fb").appendChild(n);au=setInterval(()=>{c--;if(c<=0)go();else tx()},1000);
     };
     if(it.o)document.querySelectorAll(".opts button").forEach(b=>b.onclick=()=>fin(it.ok(+b.dataset.k)));
-    else{$("ok").onclick=()=>{const v=norm($("in").value);if(v)fin(it.ok(v))};$("pass").onclick=()=>fin(false,"패스");$("in").onkeydown=e=>{if(e.key==="Enter")$("ok").click()};$("in").focus()}
+    else{$("ok").onclick=()=>{const v=norm($("in").value);if(v)fin(it.ok(v))};$("pass").onclick=()=>fin(false,"패스");if($("hb"))$("hb").onclick=()=>{$("hn").textContent=it.hint;$("hb").disabled=true};$("in").onkeydown=e=>{if(e.key==="Enter")$("ok").click()};$("in").focus()}
     clearInterval(tm);tm=setInterval(()=>{const l=Math.max(0,sec-(Date.now()-t0)/1000);$("tt").textContent=Math.ceil(l);$("tb").style.width=l/sec*100+"%";if(l<=0)fin(false,"시간 초과")},200);
   }
   view("");show();
@@ -174,41 +195,79 @@ const CHO=["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","�
 const cho1=s=>[...s].map(c=>{const n=c.charCodeAt(0)-0xAC00;return n>=0&&n<11172?CHO[n/588|0]:c}).join("");
 function cho(){
   const pool=SONGS.filter(s=>/^[가-힣\s]+$/.test(s.t)&&s.t.replace(/\s/g,"").length<=9);
-  quiz("cho",sh(pool).slice(0,10).map(s=>({q:`${cho1(s.t)}<div class="mut" style="font-weight:400">${s.t.replace(/\s/g,"").length}글자 · ${A[s.al].y}년 발표</div>`,ok:v=>[s.t,...s.a].some(x=>norm(x)===v),ans:s.t})),20);
+  quiz("cho",sh(pool).slice(0,10).map(s=>{const t=s.t.replace(/\s/g,"");return {q:`${cho1(t)}<div class="mut" style="font-weight:400">${t.length}글자</div>`,hint:`${A[s.al].n} 수록곡 · 첫 글자는 “${t[0]}”`,ok:v=>[s.t,...s.a].some(x=>norm(x)===v),ans:s.t}}),15);
 }
 function hint(){
   const items=sh(SONGS.filter(s=>s.h)).slice(0,8);let i=0,sc=0,hits=0;
   function show(){
     if(i>=items.length)return endGame("hint",sc*100/96,`${hits} / ${items.length} 정답`);
-    const s=items[i];let n=1,done=false;
-    const draw=()=>{$("stage").innerHTML=`<div class="mut">${i+1} / ${items.length} · 점수 ${sc}</div><div class="q">이 곡은 무엇일까요?</div>
+    const s=items[i];let n=1,done=false,fn=()=>{};const t0=Date.now();
+    clearInterval(tm);tm=setInterval(()=>{const l=Math.max(0,15-(Date.now()-t0)/1000);const e=$("tt");if(e){e.textContent=Math.ceil(l);$("tb").style.width=l/15*100+"%"}if(l<=0)fn(false)},200);
+    const draw=()=>{$("stage").innerHTML=`<div class="mut">${i+1} / ${items.length} · 점수 ${sc}</div><div class="big" id="tt">15</div><div class="bar"><i id="tb"></i></div><div class="q">이 곡은 무엇일까요?</div>
     <ol>${s.h.slice(0,n).map(h=>`<li>${h}</li>`).join("")}</ol><div class="mut">지금 정답이면 +${[12,8,4][n-1]}점</div>
     <input type="text" id="in" autocomplete="off" placeholder="제목 입력" style="margin-top:8px"><div class="row"><button id="ok">제출</button><button class="g" id="more" ${n>=3?"disabled":""}>힌트 더 보기</button><button class="g" id="pass">패스</button></div><div id="fb" style="margin-top:10px;font-weight:700"></div>`;
       $("in").focus();$("more").onclick=()=>{n++;draw()};
-      const fin=ok=>{if(done)return;done=true;if(ok){hits++;sc+=[12,8,4][n-1]}
+      const fin=ok=>{if(done)return;done=true;clearInterval(tm);if(ok){hits++;sc+=[12,8,4][n-1]}
         $("fb").innerHTML=(ok?`<span class="ok">정답! 🎉</span> · ${s.t}`:`<span class="bad">아쉬워요</span> · 정답: ${s.t}`)+`<div class="mut" style="font-weight:400">${s.h.join(" / ")}</div>`;
         let au,c=3;const lbl=i+1>=items.length?"결과 보기":"다음 문제";const go=()=>{clearInterval(au);i++;show()};const b=document.createElement("button");const tx=()=>b.textContent=`${lbl} · ${c}초 뒤 자동 이동`;tx();b.style.marginTop="10px";b.onclick=go;$("fb").appendChild(b);au=setInterval(()=>{c--;if(c<=0)go();else tx()},1000);
         document.querySelectorAll("#ok,#more,#pass,#in").forEach(x=>x.disabled=true)};
       $("ok").onclick=()=>{const v=norm($("in").value);if(v)fin([s.t,...s.a].some(x=>norm(x)===v))};
-      $("pass").onclick=()=>fin(false);$("in").onkeydown=e=>{if(e.key==="Enter")$("ok").click()};
+      fn=fin;$("pass").onclick=()=>fin(false);$("in").onkeydown=e=>{if(e.key==="Enter")$("ok").click()};
     };draw();
   }
   view("");show();
 }
+const TL={
+w1:["Write..","끄덕끄덕","그 사람","향기","Gravity","Stand by Me"],
+w2:["Second Write..","너만 괜찮다면","You’re My Lady","I Swear","Smile","같은자리","사랑해"],
+nj:["A New Journey","Hold On Me","Rain","Stranger","Crying Baby","넌 나만 바라봐","Flower"],
+wi:["With","냉정과 열정 사이","Lonely Night","오늘따라","Alone","지금 이 노래"],
+wt:["Whitree","Baby Baby","미래에서","Love Myself","California","불장난","I’ll Be Alright","Save Us","Kiss Me If You Love Me","낙원","Baby Baby (Eng.)"],
+tr:["Only 직진","3분의 시간 뒤에는 돌아가야해","널 만나고","조용히 내가 안아줄게요","가혹해요"]};
+const TRK=Object.fromEntries(Object.entries(TL).map(([id,l])=>[id,l.map((t,i)=>({t,k:i+1}))]));
+TRK.x8=[[1,"여백"],[2,"DEVIL"],[3,"P.O.V"],[4,"View"],[5,"Sunset Road"],[6,"CODENAME 3,2,1"],[7,"Better Days"],[8,"Love Me"],[9,"7 Days"],[10,"열 번째 페이지"],[11,"Color"],[12,"Click Click Boom!"],[13,"EVERYDAY"],[14,"소년소녀"],[15,"그런 시간"],[16,"나무"]].map(([k,t])=>({t,k}));
 function order(){
   let r=0,sc=0;
+  const pool=SONGS.filter(s=>!s.intro);
+  const modes=sh([0,1,2,3,Math.random()<.5?2:0]);
+  function build(mode){
+    if(mode<2){
+      const byAl={};sh(pool).forEach(x=>{if(!byAl[x.al])byAl[x.al]=x});
+      const set=sh(Object.values(byAl)).slice(0,4).map(x=>({t:x.t,k:A[x.al].d,tag:""}));
+      return {set,desc:mode===1,q:mode===1?"최근에 발매된 곡부터 순서대로 고른 뒤 제출하세요":"먼저 발매된 곡부터 순서대로 고른 뒤 제출하세요"};
+    }
+    const id=sh(Object.keys(TRK))[0],set=sh(TRK[id]).slice(0,4).map(x=>({t:x.t,k:x.k,tag:`${x.k}번 트랙`}));
+    return {set,desc:mode===3,q:mode===3?`「${A[id].n}」 트랙리스트 <b>뒤 번호부터</b> 거꾸로 골라 제출하세요`:`「${A[id].n}」 트랙리스트 <b>앞 번호부터</b> 순서대로 골라 제출하세요`};
+  }
   function round(){
-    if(r>=5)return endGame("order",sc,"5라운드 완료");
-    const set=sh(ALB).slice(0,4),want=set.slice().sort((a,b)=>a.d-b.d);let k=0,wrong=0;
-    $("stage").innerHTML=`<div class="mut">라운드 ${r+1} / 5 · 점수 ${sc}</div><div class="q">오래된 앨범부터 순서대로 탭하세요</div>
-    <div class="oc">${set.map(a=>`<div data-i="${a.id}">${cover(a)}</div>`).join("")}</div><div id="fb" style="margin-top:10px;font-weight:700"></div>`;
-    document.querySelectorAll(".oc>div").forEach(d=>d.onclick=()=>{
-      if(d.classList.contains("used"))return;
-      if(d.dataset.i===want[k].id){d.classList.add("used");d.querySelector(".cv").insertAdjacentText("beforeend","");k++;
-        $("fb").textContent=`${k}번째 ✓ (${want[k-1].y})`;
-        if(k===4){sc+=Math.max(4,20-wrong*5);r++;setTimeout(round,900)}}
-      else{wrong++;$("fb").innerHTML=`<span class="bad">앗, 아니에요</span>`}
-    });
+    clearInterval(tm);
+    if(r>=5)return endGame("order",sc,"5라운드 완료 · 맞힌 자리마다 5점");
+    const mode=modes[r],{set:items,desc,q}=build(mode);
+    const set=sh(items),want=items.slice().sort((x,y)=>desc?y.k-x.k:x.k-y.k);
+    let sel=[],done=false;const t0=Date.now();
+    $("stage").innerHTML=`<div class="mut">라운드 ${r+1} / 5 · 점수 ${sc}</div><div class="big" id="tt">15</div><div class="bar"><i id="tb"></i></div><div class="q">${q}</div><div class="mut" style="text-align:center">다시 누르면 선택이 취소돼요 · 맞힌 자리마다 5점</div><div class="opts" id="ob"></div><div class="row"><button id="sb" disabled>제출</button><button class="g" id="rb">초기화</button></div><div id="fb" style="margin-top:10px;font-weight:700"></div>`;
+    const draw=()=>{
+      $("ob").innerHTML="";
+      set.forEach((x,i)=>{const b=document.createElement("button");const p=sel.indexOf(i);
+        b.className=p<0?"g":"";b.textContent=p<0?x.t:`${p+1}번 · ${x.t}`;b.disabled=done;
+        b.onclick=()=>{if(done)return;if(p<0)sel.push(i);else sel.splice(p,1);draw()};$("ob").appendChild(b)});
+      $("sb").disabled=done||sel.length<4;
+    };
+    const submit=(timeout)=>{
+      if(done)return;done=true;clearInterval(tm);
+      const ok=want.map((w,pos)=>sel[pos]!==undefined&&set[sel[pos]]===w);
+      const n=ok.filter(Boolean).length;sc+=n*5;
+      draw();$("sb").disabled=true;$("rb").disabled=true;
+      $("fb").innerHTML=`<div>${timeout?'<span class="bad">시간 초과</span> · ':''}${n} / 4 자리 정답 · +${n*5}점</div>`
+        +want.map((w,pos)=>`<div class="${ok[pos]?"ok":"bad"}" style="font-weight:400">${pos+1}번 ${ok[pos]?"✓":"✗"} ${w.t}${w.tag?` <span class="mut">(${w.tag})</span>`:""}${ok[pos]?"":sel[pos]!==undefined?` <span class="mut">· 내 선택: ${set[sel[pos]].t}</span>`:` <span class="mut">· 선택 안 함</span>`}</div>`).join("");
+      let au,c=3;const lbl=r+1>=5?"결과 보기":"다음 라운드";const go=()=>{clearInterval(au);r++;round()};
+      const nb=document.createElement("button");const tx=()=>nb.textContent=`${lbl} · ${c}초 뒤 자동 이동`;tx();nb.style.marginTop="10px";nb.onclick=go;$("fb").appendChild(nb);
+      au=setInterval(()=>{c--;if(c<=0)go();else tx()},1000);
+    };
+    $("sb").onclick=()=>submit(false);
+    $("rb").onclick=()=>{if(!done){sel=[];draw()}};
+    draw();
+    tm=setInterval(()=>{const l=Math.max(0,15-(Date.now()-t0)/1000);$("tt").textContent=Math.ceil(l);$("tb").style.width=l/15*100+"%";if(l<=0)submit(true)},200);
   }
   view("");round();
 }
@@ -229,12 +288,56 @@ function ox(){
   const seen=new Set(),items=[];
   while(items.length<10){const m=mk();if(seen.has(m.q))continue;seen.add(m.q);
     items.push({q:m.q,o:["⭕ O","❌ X"],ok:k=>(k===0)===m.truth,ans:(m.truth?"O":"X")+" · "+m.ex})}
-  quiz("ox",items,12);
+  quiz("ox",items,15);
 }
 
-/* ---- 커버 업로드 ---- */
-$("up").innerHTML=ALB.filter(a=>!a.single).map(a=>`<label class="mut" style="display:block;margin:6px 0">${a.n}: <input type="file" accept="image/*" data-a="${a.id}"></label>`).join("");
-$("up").querySelectorAll("input").forEach(inp=>inp.onchange=()=>{const f=inp.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{covers[inp.dataset.a]=r.result};r.readAsDataURL(f)});
+/* ---- 뮤지컬 종합 퀴즈 ---- */
+const MU=[
+{t:"광화문연가",r:"지용",y:2012,s:"2012.02",p:"2012.02.07~03.11"},
+{t:"I LOVE YOU",r:null,y:2018,s:"2018.05",p:"2018.05 오사카 · 2018.08 도쿄 공연"},
+{t:"바넘: 위대한 쇼맨",r:"아모스 스커더",y:2018,s:"2018.08",p:"2018.08.07~10.28",alt:["바넘"]},
+{t:"그날들",r:"무영",y:2019,s:"2019.02",p:"2019.02.23~05.06"},
+{t:"메피스토",r:"메피스토",y:2019,s:"2019.06",p:"2019.06.05~07.28"},
+{t:"잭더리퍼",r:"다니엘",y:2021,s:"2021.12",p:"2021.12.03~2022.02.05"},
+{t:"모래시계",r:"우석",y:2022,s:"2022.05",p:"2022.05.26~08.14"},
+{t:"블러디 러브",r:"디미트루",y:2024,s:"2024.01",p:"2024~2025년 공연",alt:["bloody love"]},
+{t:"슈가",r:"조/조세핀",y:2025,s:"2025.01",p:"2025~2026년 공연",alt:["sugar"]}];
+const MR=MU.filter(m=>m.r),MH=MU.filter(m=>/^[가-힣\s:]+$/.test(m.t));
+const detail=m=>`${m.t}${m.r?` · ${m.r} 역`:""} · ${m.p}`;
+function musical(){
+  const pick=a=>a[Math.random()*a.length|0];
+  const gens=[
+    ()=>{const m=pick(MR),o=sh([m,...sh(MR.filter(x=>x!==m)).slice(0,3)]);
+      return {q:`남우현이 「${m.r}」 역을 맡은 뮤지컬은?`,o:o.map(x=>x.t),ok:k=>o[k]===m,ans:detail(m)}},
+    ()=>{const m=pick(MR),o=sh([m.r,...sh(MR.filter(x=>x.r!==m.r)).slice(0,3).map(x=>x.r)]);
+      return {q:`「${m.t}」에서 남우현이 맡은 역은?`,o,ok:k=>o[k]===m.r,ans:detail(m)}},
+    ()=>{const m=pick(MU),ys=[...new Set(MU.map(x=>x.y))].filter(y=>y!==m.y),o=sh([m.y,...sh(ys).slice(0,3)]);
+      return {q:`「${m.t}」 공연을 시작한 해는?`,o:o.map(y=>y+"년"),ok:k=>o[k]===m.y,ans:`${m.y}년 · ${detail(m)}`}},
+    ()=>{const m=pick(MR),truth=Math.random()<.5,r=truth?m.r:pick(MR.filter(x=>x.r!==m.r)).r;
+      return {q:`「${m.t}」에서 남우현은 <b>${r}</b> 역을 맡았다`,o:["⭕ O","❌ X"],ok:k=>(k===0)===truth,ans:`${truth?"O":"X"} · ${detail(m)}`}},
+    ()=>{const m=pick(MU),truth=Math.random()<.5,y=truth?m.y:pick(MU.filter(x=>x.y!==m.y)).y;
+      return {q:`「${m.t}」은(는) <b>${y}년</b>에 시작했다`,o:["⭕ O","❌ X"],ok:k=>(k===0)===truth,ans:`${truth?"O":"X"} · ${detail(m)}`}},
+    ()=>{const m=pick(MH),t=m.t.replace(/[\s:]/g,"");
+      return {q:`${cho1(t)}<div class="mut" style="font-weight:400">뮤지컬 제목 · ${t.length}글자</div>`,hint:`${m.y}년 공연${m.r?` · ${m.r} 역`:""}`,ok:v=>[m.t,...(m.alt||[])].some(x=>norm(x)===v),ans:detail(m)}},
+    ()=>{const set=sh(MR).slice(0,4),early=Math.random()<.5,sorted=set.slice().sort((a,b)=>a.s.localeCompare(b.s)),tg=early?sorted[0]:sorted[3];
+      return {q:`다음 중 남우현이 <b>${early?"가장 먼저":"가장 나중에"}</b> 공연한 뮤지컬은?`,o:set.map(x=>x.t),ok:k=>set[k]===tg,ans:detail(tg)}},
+    ()=>{const m=pick(MU),n=MU.indexOf(m)+1,ns=[...Array(MU.length)].map((_,i)=>i+1).filter(x=>x!==n),o=sh([n,...sh(ns).slice(0,3)]);
+      return {q:`「${m.t}」은(는) 남우현의 몇 번째 뮤지컬일까요?`,o:o.map(x=>x+"번째"),ok:k=>o[k]===n,ans:`${n}번째 · ${detail(m)} (확인된 목록 기준)`}},
+    ()=>{const n=1+(Math.random()*MU.length|0),m=MU[n-1],o=sh([m,...sh(MU.filter(x=>x!==m)).slice(0,3)]);
+      return {q:`남우현이 <b>${n}번째</b>로 출연한 뮤지컬은?`,o:o.map(x=>x.t),ok:k=>o[k]===m,ans:`${n}번째 · ${detail(m)} (확인된 목록 기준)`}},
+    ()=>{const ys=[2012,2018,2019,2020,2021,2022,2023,2024,2025],y=pick(ys),L=MU.filter(m=>m.y===y),c=L.length,o=sh([c,...sh([0,1,2,3,4].filter(x=>x!==c)).slice(0,3)]);
+      return {q:`남우현이 ${y}년에 시작한 뮤지컬은 몇 작품일까요?`,o:o.map(x=>x+"작품"),ok:k=>o[k]===c,ans:`${c}작품${c?" · "+L.map(m=>m.t).join(", "):""} (확인된 목록 기준)`}},
+    ()=>{const n=MU.length,o=sh([n-2,n-1,n,n+1]);
+      return {q:`이 퀴즈에 수록된 남우현의 뮤지컬은 모두 몇 작품일까요?`,o:o.map(x=>x+"작품"),ok:k=>o[k]===n,ans:`${n}작품 · ${MU.map(m=>m.t).join(", ")}`}}];
+  const items=[],seen=new Set();let n=0;
+  const cnt=sh([7,8,9,10]).slice(0,2),rest=sh([0,1,2,3,4,5,6]).slice(0,8);
+  const order=sh([...cnt,...rest]);
+  while(items.length<10&&n++<200){
+    const g=gens[items.length<order.length?order[items.length]:Math.random()*gens.length|0],q=g();
+    if(seen.has(q.q))continue;seen.add(q.q);items.push(q);
+  }
+  quiz("musical",sh(items),15);
+}
 
 /* ---- 순위표 ---- */
 let curTab="album";
@@ -249,7 +352,7 @@ function renderLb(){
     [rank+"위",r.name||"익명",r.s].forEach((v,k)=>{const td=document.createElement("td");if(k===2)td.className="n";td.textContent=v;tr.appendChild(td)});t.appendChild(tr)});
   $("lb").textContent="";$("lb").appendChild(t);
 }
-drawTabs();drawMenu();
+drawTabs();drawMenu();drawNick();
 (async()=>{
   const to=setTimeout(()=>{if($("lb").textContent.startsWith("불러오는"))$("lb").textContent="순위표를 아직 불러오지 못했어요. 이 환경에서는 표시되지 않을 수 있어요."},10000);
   try{
@@ -260,6 +363,7 @@ drawTabs();drawMenu();
     db.collection("scores").limit(500).onSnapshot(s=>{
       clearTimeout(to);rows=s.docs.map(d=>({id:d.id,...d.data()}));
       const me=rows.find(r=>r.id===uid);if(me&&me.g){myG={...me.g,...myG};drawMenu()}
+      if(me&&me.name&&!nick){nick=me.name;canEdit=true;try{localStorage.setItem("wh-nick",nick)}catch(e){}drawNick()}
       renderLb();
     },()=>{$("lb").textContent="순위표를 불러오지 못했어요."});
   }catch(e){$("lb").textContent="순위표를 사용할 수 없는 환경이에요."}
