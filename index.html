@@ -69,7 +69,7 @@ input[type=text]{font-size:16px;min-height:44px}
 @media (min-width:960px){main{max-width:780px}.card{padding:22px}}
 @media (max-width:600px){#menu{--k:1.18}}
 @media (orientation:portrait){#menu svg{margin-top:max(0px,calc((100dvh - 137vw)*.32))}}
-@media (max-width:430px){.lf text:nth-of-type(1){font-size:17px}.lf text:nth-of-type(2){font-size:13px}}
+@media (max-width:430px){.lf text:nth-of-type(1){font-size:15.5px}.lf text:nth-of-type(2){font-size:12px}}
 @media (max-height:540px){
  main{padding-top:10px;padding-bottom:20px}
  h1{font-size:18px;margin:0}main>.s{display:none}
@@ -83,6 +83,12 @@ input[type=text]{font-size:16px;min-height:44px}
  #menu svg{height:auto;width:min(100%,560px);margin:0 auto}
  #tcap{display:none}
 }
+a.btn{text-decoration:none;display:inline-block;font:inherit;border-radius:10px;padding:10px 16px;background:var(--ac);color:#fff}a.btn.g{background:transparent;color:var(--tx);border:1px solid var(--bd)}
+.mvh{width:100%;display:flex;justify-content:space-between;align-items:center;gap:10px;text-align:left;background:transparent;color:var(--tx);border:0;padding:0;border-radius:0;font-size:16px}
+.mvh .chev{font-size:20px;color:var(--mut);transition:transform .2s}.card.open .mvh .chev{transform:rotate(180deg)}
+.vbox:empty{display:none}
+a.yt{display:inline-flex;align-items:center;justify-content:center;width:48px;height:48px;border-radius:50%;background:#2e5a1f;text-decoration:none}a.yt:hover,a.yt:focus-visible{background:#3d7a2a;outline:2px solid #1c2a0e;outline-offset:2px}
+.mvgrp{font-weight:700;font-size:15px;margin:16px 4px 8px;color:#1c2a0e}.mvgrp:first-child{margin-top:4px}
 </style>
 </head>
 <body class="tree-on">
@@ -104,6 +110,10 @@ input[type=text]{font-size:16px;min-height:44px}
 <button id="nickOk" style="width:100%;margin-top:6px">설정</button>
 </div></div>
 <div id="gt" class="hide" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-weight:700;font-size:19px;margin:6px 2px 10px"><span id="gtt"></span><button class="g" id="gtHome" style="padding:6px 12px;font-size:14px;white-space:nowrap">🌳 나무로 돌아가기</button></div>
+<section id="mvPage" class="hide">
+<div class="card"><div class="mut" id="mvNote"></div></div>
+<div id="mvList"></div>
+</section>
 <section id="rankPage" class="hide">
 <div class="card"><div class="mut">총합은 여섯 게임의 최고점을 모두 더한 점수예요. 게임 탭을 누르면 게임별 순위를 볼 수 있어요. (상위 20명)</div><div id="tabs" class="row"></div><div id="lb" class="mut" style="margin-top:8px">불러오는 중…</div></div>
 </section>
@@ -214,13 +224,13 @@ function drawNick(){const b=$("nickBadge");b.textContent=nick?"👤 "+nick:"";if
 
 /* ---- 공통 ---- */
 function view(h){$("gt").classList.remove("hide");document.body.classList.remove("tree-on");$("home").classList.add("hide");$("stage").classList.remove("hide");$("stage").innerHTML=h}
-function home(){$("gt").classList.add("hide");$("rankPage").classList.add("hide");document.body.classList.add("tree-on");window.scrollTo(0,0);clearInterval(tm);$("stage").classList.add("hide");$("home").classList.remove("hide");drawMenu()}
+function home(){$("mvPage").classList.add("hide");$("gt").classList.add("hide");$("rankPage").classList.add("hide");document.body.classList.add("tree-on");window.scrollTo(0,0);clearInterval(tm);$("stage").classList.add("hide");$("home").classList.remove("hide");drawMenu()}
 /* 나뭇잎 위치: [x, y, 기울기, 방향(-1 왼쪽, 1 오른쪽)] — 사진을 쓸 때 여기 숫자만 고치면 돼요 (화면 크기 560x700 기준) */
-const LEAF_POS=[[205,445,6,-1],[355,420,-6,1],[190,335,-4,-1],[370,310,5,1],[205,225,8,-1],[355,200,-8,1],[292,112,-24,1]];
+const LEAF_POS=[[205,445,6,-1],[355,420,-6,1],[190,335,-4,-1],[370,310,5,1],[205,225,8,-1],[355,200,-8,1],[292,112,-24,1],[215,128,-10,-1]];
 function drawMenu(){
   const SH={album:"앨범 맞히기",cho:"초성 퀴즈",hint:"힌트 추리",order:"발매순 정렬",ox:"O/X 퀴즈",musical:"뮤지컬 퀴즈"};
   const items=GAMES.map(g=>({id:g.id,t:SH[g.id],sub:"최고 "+(myG[g.id]||0)+"점",d:g.d,fn:()=>start(g.id),aria:SH[g.id]+", 내 최고 "+(myG[g.id]||0)+"점"}))
-    .concat([{id:"rank",t:"전체 순위",sub:"🏆 순위 보기",d:"게임별 순위표를 확인해요",fn:openLb,aria:"전체 순위 보기",gold:1}]);
+    .concat([{id:"rank",t:"전체 순위",sub:"🏆 순위 보기",d:"게임별 순위표를 확인해요",fn:openLb,aria:"전체 순위 보기",grad:"lg2"},{id:"mv",t:"뮤직비디오",sub:"🎬 MV 보기",d:"공식 뮤직비디오 모음",fn:openMv,aria:"뮤직비디오 보기",grad:"lg3"}]);
   let seed=7;const R=()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
   const f=n=>n.toFixed(1),CX=280,GY=668,pts=[];
   const tx=y=>CX+Math.sin(y/90)*5;
@@ -231,10 +241,10 @@ function drawMenu(){
       const w=(w0+(w1-w0)*t)/2;L.push([x-dy*w,y+dx*w]);Rr.push([x+dy*w,y-dx*w]);
       if(keep&&k%3==0)pts.push([x,y]);}
     return"M"+L.concat(Rr.reverse()).map(v=>f(v[0])+","+f(v[1])).join("L")+"Z"}
-  let o='<svg viewBox="10 -40 540 740" preserveAspectRatio="xMidYMin meet" role="group" aria-label="나무에 달린 일곱 개의 나뭇잎 메뉴"><defs>'
+  let o='<svg viewBox="10 -40 540 740" preserveAspectRatio="xMidYMin meet" role="group" aria-label="나무에 달린 여덟 개의 나뭇잎 메뉴"><defs>'
    +'<linearGradient id="bg1" x1="0" x2="1"><stop offset="0" stop-color="#3b2a1b"/><stop offset=".35" stop-color="#7d5e42"/><stop offset=".6" stop-color="#6a4d35"/><stop offset="1" stop-color="#34251a"/></linearGradient>'
    +'<linearGradient id="lg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4aa04a"/><stop offset="1" stop-color="#1f5f2e"/></linearGradient>'
-   +'<linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9a62e"/><stop offset="1" stop-color="#8a5a12"/></linearGradient>'
+   +'<linearGradient id="lg3" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d4733f"/><stop offset="1" stop-color="#8c3320"/></linearGradient><linearGradient id="lg2" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#d9a62e"/><stop offset="1" stop-color="#8a5a12"/></linearGradient>'
    +'<linearGradient id="gr" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6e9a4a"/><stop offset="1" stop-color="#3d5f2c"/></linearGradient>'
    +'<filter id="bk" x="-15%" y="-5%" width="130%" height="110%"><feTurbulence type="fractalNoise" baseFrequency="0.05 0.28" numOctaves="3" seed="4" result="n"/><feColorMatrix in="n" type="matrix" values="0 0 0 0 .12 0 0 0 0 .08 0 0 0 0 .04 0 0 0 -1.8 1.15" result="d"/><feComposite in="d" in2="SourceAlpha" operator="in" result="dd"/><feMerge><feMergeNode in="SourceGraphic"/><feMergeNode in="dd"/></feMerge></filter>'
    +'<filter id="sh" x="-20%" y="-30%" width="150%" height="170%"><feDropShadow dx="1.5" dy="3" stdDeviation="2.5" flood-color="#000" flood-opacity=".4"/></filter>'
@@ -276,8 +286,8 @@ function drawMenu(){
     const lp=`M0,0 C${d*w*.14},${-h*.95} ${d*w*.55},${-h*1.1} ${d*w},0 C${d*w*.55},${h*1.1} ${d*w*.14},${h*.95} 0,0Z`;
     let vn=`<path d="M${d*-12},0 L${d*w*.94},0" stroke="#f3e6b8" stroke-opacity=".55" stroke-width="2" fill="none" stroke-linecap="round"/>`;
     [.2,.38,.56,.74].forEach(t=>{const xx=d*w*t,l=h*(.78-t*.5);vn+=`<path d="M${f(xx)},0 l${f(d*l*.8)},${f(-l)} M${f(xx)},0 l${f(d*l*.8)},${f(l)}" stroke="#f3e6b8" stroke-opacity=".32" stroke-width="1.2" fill="none" stroke-linecap="round"/>`});
-    const t2=f(d*w*.5),st='fill="#fff" stroke="#10361a" stroke-opacity=".65" paint-order="stroke" text-anchor="middle"';
-    o+=`<g transform="translate(${x},${y}) rotate(${r})"><g class="sw" style="animation-delay:${-k*.8}s;transform-origin:0 0"><g class="lf" data-i="${k}" role="button" tabindex="0" aria-label="${it.aria}"><g class="ls" filter="url(#sh)"><path class="lp" d="${lp}" fill="url(#${it.gold?"lg2":"lg"})" stroke="#f3ecd0" stroke-opacity=".5" stroke-width="1.2"/>${vn}<text x="${t2}" y="-4" ${st} stroke-width="3" font-size="16" font-weight="700">${it.t}</text><text x="${t2}" y="14" ${st} stroke-width="2.5" font-size="12">${it.sub}</text></g></g></g></g>`});
+    const t2=f(d*w*.46),st='fill="#fff" stroke="#10361a" stroke-opacity=".65" paint-order="stroke" text-anchor="middle"';
+    o+=`<g transform="translate(${x},${y}) rotate(${r})"><g class="sw" style="animation-delay:${-k*.8}s;transform-origin:0 0"><g class="lf" data-i="${k}" role="button" tabindex="0" aria-label="${it.aria}"><g class="ls" filter="url(#sh)"><path class="lp" d="${lp}" fill="url(#${it.grad||"lg"})" stroke="#f3ecd0" stroke-opacity=".5" stroke-width="1.2"/>${vn}<text x="${t2}" y="-4" ${st} stroke-width="3" font-size="15" font-weight="700">${it.t}</text><text x="${t2}" y="14" ${st} stroke-width="2.5" font-size="11.5">${it.sub}</text></g></g></g></g>`});
   o+='</svg>';
   $("menu").innerHTML=o;
   const cap=$("tcap"),def="";
@@ -310,7 +320,20 @@ async function endGame(g,sc,note){
 }
 
 /* ---- 객관식/주관식 러너 ---- */
+function capPick(a,n,key,cap){const c={},r=[];for(const x of a){const k=key(x);if((c[k]||0)>=cap)continue;c[k]=(c[k]||0)+1;r.push(x);if(r.length>=n)break}return r}
+function spread(a){ // 같은 정답이 연달아 나오지 않게 순서 조정
+  const k=x=>String(x.ans!==undefined?x.ans:x.ex||"");
+  const okAll=b=>b.every((x,n)=>n===0||k(x)!==k(b[n-1]));
+  let best=a.slice();
+  for(let t=0;t<80;t++){
+    let b=t?sh(a.slice()):a.slice();
+    for(let i=1;i<b.length;i++){if(k(b[i])!==k(b[i-1]))continue;
+      const j=b.findIndex((x,n)=>n>i&&k(x)!==k(b[i-1])&&k(x)!==k(b[i+1]||""));
+      if(j>=0)[b[i],b[j]]=[b[j],b[i]]}
+    if(okAll(b))return b;best=b}
+  return best}
 function quiz(g,items,sec){
+  items=spread(items);
   let i=0,sc=0,hits=0;
   const per=100/items.length;
   function show(){
@@ -337,10 +360,10 @@ function quiz(g,items,sec){
 /* ---- 게임들 ---- */
 function album(){
   const pool=SONGS.filter(s=>!s.intro);
-  quiz("album",sh(pool).slice(0,10).map(s=>{
+  quiz("album",capPick(sh(pool),10,s=>s.al,4).map(s=>{
     const ids=[s.al,...(s.also||[])];
     const opts=sh([A[ids[0]],...sh(ALB.filter(a=>!ids.includes(a.id))).slice(0,3)]);
-    return {q:`「${s.t}」이 수록된 곳은?`,o:opts.map(a=>`${a.n} (${a.y})`),ok:k=>ids.includes(opts[k].id),ans:ids.map(i=>`${A[i].n} (${A[i].y})`).join(" / ")};
+    return {q:`「${s.t}」이 수록된 곳은?`,o:opts.map(a=>a.n),ok:k=>ids.includes(opts[k].id),ans:ids.map(i=>`${A[i].n} (${A[i].y})`).join(" / ")};
   }),15);
 }
 const CHO=["ㄱ","ㄲ","ㄴ","ㄷ","ㄸ","ㄹ","ㅁ","ㅂ","ㅃ","ㅅ","ㅆ","ㅇ","ㅈ","ㅉ","ㅊ","ㅋ","ㅌ","ㅍ","ㅎ"];
@@ -508,6 +531,35 @@ drawTabs();drawMenu();drawNick();
 function openNick(){$("nickModal").classList.remove("hide");$("nick").value=nick;$("msg").textContent=nick?"이전에 쓰던 닉네임이에요. 그대로 쓰거나 바꿔서 설정을 눌러 주세요.":"";setTimeout(()=>$("nick").focus(),60)}
 function okNick(){const v=$("nick").value.trim().slice(0,12);if(!v){$("msg").textContent="닉네임을 입력해 주세요.";return}saveNick(v);$("nickModal").classList.add("hide")}
 $("nickOk").onclick=okNick;$("nick").onkeydown=e=>{if(e.key==="Enter")okNick()};
+const MVS=[["Only 직진","69W1qtlFLh8"],["DEVIL","zAgbhCtfdWI"],["눈부셨다","jUQPD8rDHwA"],["Baby Baby","y7x5uPkcKv0"],["가을이 오면","vzFF-boVVVk"],["Hold On Me","oVh49Q9fz68"],["너만 괜찮다면","BQs6jUlRpY4"],["끄덕끄덕","cVtcn6ptjmE"]];
+const CAN_EMBED=!window.claude;
+const MVS2=[["넌 나의 Destiny","4alsAG3_3t0","OST · 스피릿 핑거스 Part.3","2025"],["Shooting Star","uS5DsnRgmpg","OST · 별똥별 Part.1",""],["FULL MOON (with 남우현)","A-EcTULDu8Q","권순관",""],["선인장","B9r19gxg6PM","수록: re;code Episode II · 심규선과의 듀엣","2013"],["Hope","zCzoQkQzJN4","OST · 엘소드 청",""],["불꽃놀이","tOz6wMyxPHw","KBS 리슨업(Listen-Up) · Prod. 픽보이(Peakboy)","2022"]];
+function drawMv(){
+  $("mvNote").textContent=CAN_EMBED?"제목을 누르면 영상이 펼쳐지고 바로 재생돼요. 재생이 안 되면 영상 아래 '유튜브에서 보기'를 눌러 주세요.":"제목을 누르면 펼쳐져요. 영상 아래 '유튜브에서 보기'를 누르면 유튜브가 새 탭에서 열려요.";
+  const info=m=>{const s=SONGS.find(x=>x.t===m[0]);return {al:s?A[s.al].n:"",d:s?A[s.al].d:0,y:s?A[s.al].y.slice(0,4):""}};
+  const list=MVS.map(m=>({t:m[0],id:m[1],...info(m),sub:"수록: "+(info(m).al)})).sort((a,b)=>b.d-a.d);
+  const list2=MVS2.map(m=>({t:m[0],id:m[1],sub:m[2],y:m[3]}));
+  $("mvList").innerHTML="";
+  const closeAll=()=>document.querySelectorAll("#mvList .card").forEach(c=>{c.classList.remove("open");c.querySelector(".mvh").setAttribute("aria-expanded","false");c.querySelector(".vbox").innerHTML=""});
+  const add=m=>{
+    const c=document.createElement("div");c.className="card";
+    const h=document.createElement("button");h.className="mvh";h.setAttribute("aria-expanded","false");
+    const tt=document.createElement("span");const b=document.createElement("b");b.textContent=m.t;tt.appendChild(b);if(m.y){const y=document.createElement("span");y.className="mut";y.style.cssText="font-weight:400;margin-left:8px";y.textContent=m.y;tt.firstChild.after(y)}
+    if(m.sub&&m.sub!=="수록: "){const al=document.createElement("div");al.className="mut";al.textContent=m.sub;tt.appendChild(al)}
+    const ch=document.createElement("span");ch.className="chev";ch.textContent="▾";h.append(tt,ch);
+    const box=document.createElement("div");box.className="vbox";
+    h.onclick=()=>{const was=c.classList.contains("open");closeAll();if(was)return;
+      c.classList.add("open");h.setAttribute("aria-expanded","true");
+      let html="";
+      if(CAN_EMBED)html+='<div style="position:relative;aspect-ratio:16/9;margin-top:12px"><iframe src="https://www.youtube-nocookie.com/embed/'+m.id+'?autoplay=1&rel=0" title="'+m.t+' 영상" style="position:absolute;inset:0;width:100%;height:100%;border:0;border-radius:10px" allow="autoplay; encrypted-media; picture-in-picture; fullscreen" allowfullscreen></iframe></div>';
+      html+='<div class="row" style="align-items:center"><a class="yt" href="https://www.youtube.com/watch?v='+m.id+'" target="_blank" rel="noopener" aria-label="유튜브에서 보기" title="유튜브에서 보기"><svg viewBox="0 0 24 24" width="22" height="22" aria-hidden="true"><path d="M8 5.5v13l11-6.5z" fill="#fff"/></svg></a><span class="mut">유튜브에서 보기</span></div>';
+      box.innerHTML=html};
+    c.append(h,box);$("mvList").appendChild(c)};
+  const head=t=>{const d=document.createElement("div");d.className="mvgrp";d.textContent=t;$("mvList").appendChild(d)};
+  head("뮤직비디오");list.forEach(add);
+  head("OST · 참여곡");list2.forEach(add);
+}
+function openMv(){document.body.classList.remove("tree-on");$("home").classList.add("hide");$("mvPage").classList.remove("hide");$("gtt").textContent="🎬 뮤직비디오";$("gt").classList.remove("hide");window.scrollTo(0,0);drawMv()}
 function openLb(){document.body.classList.remove("tree-on");$("home").classList.add("hide");$("rankPage").classList.remove("hide");$("gtt").textContent="🏆 전체 순위";$("gt").classList.remove("hide");window.scrollTo(0,0);renderLb()}
 $("gtHome").onclick=()=>home();
 {const im=new Image();im.onload=()=>{$("photo").style.backgroundImage='url("tree.jpg")';$("home").classList.add("photo")};im.src="tree.jpg"}
