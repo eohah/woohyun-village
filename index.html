@@ -96,7 +96,7 @@ a.yt{display:inline-flex;align-items:center;justify-content:center;width:48px;he
 #lb table{table-layout:fixed}#lb th,#lb td,#lb td.n,#lb th.n{width:33.33%;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #pzBtns button{padding:6px 8px;font-size:13px;min-height:38px;flex:1 1 0;min-width:0}
 body.pz main{max-width:min(980px,100%)}body.pz main>.s{display:none}body.pz #stage{padding:8px}body.pz #pzBtns{margin:0 0 8px!important}#pzBtns button{white-space:nowrap;padding-left:4px;padding-right:4px}
-#pzPick .mbox,#memPick .mbox{background:#fff;border-color:#e2e0d8;text-align:center}:root[data-theme="dark"] #pzPick .mbox,:root[data-theme="dark"] #memPick .mbox{background:var(--card);border-color:var(--bd)}body.mm main>.s{display:none}#mmBox{display:flex;justify-content:center}#mmGrid{display:grid}.mc{all:unset;box-sizing:border-box;display:block;aspect-ratio:1;perspective:700px;cursor:pointer;border-radius:10px;-webkit-tap-highlight-color:transparent}.mc:focus-visible{outline:3px solid #2f6fe0;outline-offset:2px}.mi{position:relative;display:block;width:100%;height:100%;transition:transform .35s;transform-style:preserve-3d}.mc.on .mi{transform:rotateY(180deg)}.mf{position:absolute;inset:0;border-radius:10px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}.mb{background:linear-gradient(135deg,#5b9a45,#2f6a2a);border:2px solid rgba(255,255,255,.6);box-shadow:0 2px 5px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center}.mb::after{content:"🌳";font-size:1em}.mp{transform:rotateY(180deg);background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.18)}.mp img{width:100%;height:100%;object-fit:cover;display:block}.mc.ok .mp{box-shadow:0 0 0 3px var(--ok)}.mc.ok .mi{animation:mmPop .35s}@keyframes mmPop{50%{transform:rotateY(180deg) scale(1.06)}}.pkb{display:flex;flex-direction:column;gap:8px}.pkb button{min-height:50px;font-size:17px}.pkb small{font-size:13px;opacity:.75;margin-left:4px}
+#pzPick .mbox,#memPick .mbox{background:#fff;border-color:#e2e0d8;text-align:center}:root[data-theme="dark"] #pzPick .mbox,:root[data-theme="dark"] #memPick .mbox{background:var(--card);border-color:var(--bd)}body.mm main>.s{display:none}#mmBox{display:flex;justify-content:center}#mmGrid{display:grid}.mc{all:unset;box-sizing:border-box;display:block;aspect-ratio:1;perspective:700px;cursor:pointer;touch-action:manipulation;user-select:none;-webkit-user-select:none;border-radius:10px;-webkit-tap-highlight-color:transparent}.mc:focus-visible{outline:3px solid #2f6fe0;outline-offset:2px}.mi{position:relative;display:block;width:100%;height:100%;transition:transform .2s ease-out;transform-style:preserve-3d}.mc.on .mi{transform:rotateY(180deg)}.mf{position:absolute;inset:0;border-radius:10px;backface-visibility:hidden;-webkit-backface-visibility:hidden;overflow:hidden}.mb{background:linear-gradient(135deg,#5b9a45,#2f6a2a);border:2px solid rgba(255,255,255,.6);box-shadow:0 2px 5px rgba(0,0,0,.18);display:flex;align-items:center;justify-content:center}.mb::after{content:"🌳";font-size:1em}.mp{transform:rotateY(180deg);background:#fff;box-shadow:0 2px 5px rgba(0,0,0,.18)}.mp img{width:100%;height:100%;object-fit:cover;display:block}.mc.ok .mp{box-shadow:0 0 0 3px var(--ok)}.mc.ok .mi{animation:mmPop .25s}@keyframes mmPop{50%{transform:rotateY(180deg) scale(1.05)}}.pkb{display:flex;flex-direction:column;gap:8px}.pkb button{min-height:50px;font-size:17px}.pkb small{font-size:13px;opacity:.75;margin-left:4px}
 #exitModal .mbox{background:#fff;border-color:#e2e0d8;text-align:center}:root[data-theme="dark"] #exitModal .mbox{background:var(--card);border-color:var(--bd)}#exitModal p{font-size:17px;line-height:1.6;margin:4px 0 16px}#exitModal .row{justify-content:center;gap:10px}#exitModal button{flex:1;min-height:46px}
 </style>
 </head>
@@ -601,18 +601,21 @@ function memory(){
       let best={s:0,c:4};for(let c=3;c<=8;c++){const r=Math.ceil(n/c),s=Math.min((W-gap*(c-1))/c,(H-gap*(r-1))/r);if(s>best.s)best={s,c}}
       const s=Math.floor(Math.min(best.s,160));grid.style.gridTemplateColumns=`repeat(${best.c},${s}px)`;grid.style.gap=gap+"px";grid.style.fontSize=Math.round(s*.38)+"px"}
     layout();const ro=new ResizeObserver(()=>{if(!grid.isConnected){ro.disconnect();return}layout()});ro.observe($("mmBox"));
-    let first=-1,lock=false,turns=0,found=0,t0=0;
+    let first=-1,lock=false,turns=0,found=0,t0=0,pend=null;
     const el=()=>t0?Math.floor((Date.now()-t0)/1000):0,mmss=s=>Math.floor(s/60)+":"+String(s%60).padStart(2,"0");
     const hud=()=>{$("mmSt").textContent="시도 "+turns+"회 · "+mmss(el());$("mmPr").textContent=found+" / "+L.p};
     function show(k,o){const c=cards[k];c.open=o;c.b.classList.toggle("on",o);c.b.setAttribute("aria-label","카드 "+(k+1)+(o?", 열림":", 뒤집힘"))}
-    function flip(k){const c=cards[k];if(lock||c.open||c.done)return;
+    function flip(k){const c=cards[k];
+      // 틀린 두 장이 열려 있을 때 다른 카드를 누르면 바로 덮고 진행
+      if(lock&&pend){clearTimeout(pend.t);show(pend.a,false);show(pend.b,false);pend=null;lock=false}
+      if(lock||c.open||c.done)return;
       if(!t0){t0=Date.now();tm=setInterval(()=>{if(!grid.isConnected){clearInterval(tm);return}hud()},500)}
       show(k,true);
       if(first<0){first=k;return}
       const a=cards[first],b=c;turns++;const f=first;first=-1;
-      if(a.im===b.im){a.done=b.done=true;found++;setTimeout(()=>{a.b.classList.add("ok");b.b.classList.add("ok")},250);hud();
-        if(found===L.p)setTimeout(finish,700)}
-      else{lock=true;hud();setTimeout(()=>{show(f,false);show(k,false);lock=false},800)}
+      if(a.im===b.im){a.done=b.done=true;found++;setTimeout(()=>{a.b.classList.add("ok");b.b.classList.add("ok")},150);hud();
+        if(found===L.p)setTimeout(finish,550)}
+      else{lock=true;hud();pend={a:f,b:k,t:setTimeout(()=>{show(f,false);show(k,false);lock=false;pend=null},550)}}
     }
     function finish(){clearInterval(tm);document.body.classList.remove("mm");const t=Math.max(1,el()),eff=Math.min(1,L.p/turns),tf=Math.max(0,Math.min(1,1-(t-L.p*3)/(L.p*6)));
       const sc=Math.round(L.mx*(0.7*eff+0.3*tf));
