@@ -96,6 +96,7 @@ a.yt{display:inline-flex;align-items:center;justify-content:center;width:48px;he
 #lb table{table-layout:fixed}#lb th,#lb td,#lb td.n,#lb th.n{width:33.33%;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #pzBtns button{padding:6px 8px;font-size:13px;min-height:38px;flex:1 1 0;min-width:0}
 body.pz main{max-width:min(980px,100%)}body.pz main>.s{display:none}body.pz #stage{padding:8px}body.pz #pzBtns{margin:0 0 8px!important}
+#pzPick .mbox{background:#fff;border-color:#e2e0d8;text-align:center}:root[data-theme="dark"] #pzPick .mbox{background:var(--card);border-color:var(--bd)}.pkb{display:flex;flex-direction:column;gap:8px}.pkb button{min-height:50px;font-size:17px}.pkb small{font-size:13px;opacity:.75;margin-left:4px}
 #exitModal .mbox{background:#fff;border-color:#e2e0d8;text-align:center}:root[data-theme="dark"] #exitModal .mbox{background:var(--card);border-color:var(--bd)}#exitModal p{font-size:17px;line-height:1.6;margin:4px 0 16px}#exitModal .row{justify-content:center;gap:10px}#exitModal button{flex:1;min-height:46px}
 </style>
 </head>
@@ -117,6 +118,7 @@ body.pz main{max-width:min(980px,100%)}body.pz main>.s{display:none}body.pz #sta
 <div class="mut" id="msg" style="min-height:22px;margin-top:6px"></div>
 <button id="nickOk" style="width:100%;margin-top:6px">설정</button>
 </div></div>
+<div id="pzPick" class="modal hide" role="dialog" aria-modal="true" aria-labelledby="pkT"><div class="mbox"><h2 id="pkT">🧩 퍼즐 맞추기</h2><p class="mut" style="margin:0 0 14px">몇 피스로 할까요?</p><div class="pkb"><button id="pk1">100피스 <small>쉬움</small></button><button id="pk3">300피스 <small>보통</small></button><button id="pk5">500피스 <small>어려움</small></button><button class="g" id="pkX">취소</button></div></div></div>
 <div id="exitModal" class="modal hide" role="alertdialog" aria-modal="true" aria-labelledby="exT"><div class="mbox"><p id="exT">현재 창을 벗어나면 게임이 리셋됩니다.<br>그래도 나가시겠습니까?</p><div class="row"><button id="exYes">예</button><button class="g" id="exNo">아니오</button></div></div></div>
 <div id="gt" class="hide" style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;font-weight:700;font-size:19px;margin:6px 2px 10px"><span id="gtt"></span><button class="g" id="gtHome" style="padding:6px 12px;font-size:14px;white-space:nowrap">🌳 나무로 돌아가기</button></div>
 <section id="mvPage" class="hide">
@@ -244,7 +246,7 @@ window.addEventListener("resize",setVB);
 function drawMenu(){
   const SH={album:"앨범 맞히기",cho:"초성 퀴즈",hint:"힌트 추리",order:"발매순 정렬",ox:"O/X 퀴즈",musical:"뮤지컬 퀴즈",puzzle:"퍼즐 맞추기"};
   const items=GAMES.map(g=>({id:g.id,t:SH[g.id],sub:"최고 "+(myG[g.id]||0)+"점",d:g.d,fn:()=>start(g.id),aria:SH[g.id]+", 내 최고 "+(myG[g.id]||0)+"점"}))
-    .concat([{id:"puzzle",t:"퍼즐 맞추기",sub:"🧩 400피스",d:"사진 한 장을 400피스 퍼즐로",fn:()=>start("puzzle"),aria:"퍼즐 맞추기, 400피스"},{id:"rank",t:"전체 순위",sub:"🏆 순위 보기",d:"게임별 순위표를 확인해요",fn:openLb,aria:"전체 순위 보기",grad:"lg2"},{id:"mv",t:"영상자료",sub:"🎬 영상 보기",d:"공식 영상 모음",fn:openMv,aria:"영상자료 보기",grad:"lg3"}]);
+    .concat([{id:"puzzle",t:"퍼즐 맞추기",sub:"🧩 100·300·500",d:"조각 수를 골라서 사진 퍼즐 맞추기",fn:()=>start("puzzle"),aria:"퍼즐 맞추기, 100·300·500피스"},{id:"rank",t:"전체 순위",sub:"🏆 순위 보기",d:"게임별 순위표를 확인해요",fn:openLb,aria:"전체 순위 보기",grad:"lg2"},{id:"mv",t:"영상자료",sub:"🎬 영상 보기",d:"공식 영상 모음",fn:openMv,aria:"영상자료 보기",grad:"lg3"}]);
   let seed=7;const R=()=>{seed|=0;seed=seed+0x6D2B79F5|0;let t=Math.imul(seed^seed>>>15,1|seed);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
   const f=n=>n.toFixed(1),CX=280,GY=668,pts=[];
   const tx=y=>CX+Math.sin(y/90)*5;
@@ -346,9 +348,13 @@ const PUZ_IMGS=["data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAkGBwgH
 function puzzle(){
   try{localStorage.removeItem("wh-pz")}catch(e){}
   const fmt=s=>{const h=Math.floor(s/3600),m=Math.floor(s/60)%60,x=s%60;return (h?h+"시간 ":"")+(h||m?m+"분 ":"")+x+"초"};
-  run(null);
-  function run(sv){
-    const COLS=16,ROWS=25,S=60,PAD=20,CS=S+PAD*2,N=COLS*ROWS;let TW=1500,TH=1950;
+  view(`<b>퍼즐 맞추기</b><div class="mut" style="margin-top:6px">조각 수를 골라 주세요</div>`);
+  const pk=$("pzPick"),pick=(c,r,lab)=>{pk.classList.add("hide");run({COLS:c,ROWS:r,lab})};
+  pk.classList.remove("hide");setTimeout(()=>$("pk1").focus(),30);
+  $("pk1").onclick=()=>pick(8,13,"100피스");$("pk3").onclick=()=>pick(14,22,"300피스");$("pk5").onclick=()=>pick(18,28,"500피스");
+  $("pkX").onclick=()=>{pk.classList.add("hide");home()};
+  function run(cfg){
+    const sv=null,COLS=cfg.COLS,ROWS=cfg.ROWS,S=60,PAD=20,CS=S+PAD*2,N=COLS*ROWS;let TW=1500,TH=1950;
     const seed=sv?(sv.seed>>>0):((Math.random()*4294967296)>>>0);
     const ii=sv?((sv.img|0)%PUZ_IMGS.length):Math.floor(Math.random()*PUZ_IMGS.length);
     let rs=seed;const rnd=()=>{rs=rs+0x6D2B79F5|0;let t=Math.imul(rs^rs>>>15,1|rs);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
@@ -359,7 +365,7 @@ function puzzle(){
     document.body.classList.add("pz");
     const img=new Image();img.onload=go;img.src=PUZ_IMGS[ii];
     function go(){
-      {const bx=$("pzBox"),bw=bx&&bx.clientWidth||400,bh=bx&&bx.clientHeight||560,a=bh/bw;TW=Math.max(1040,Math.round(Math.sqrt(2.95e6/a)));TH=Math.max(1580,Math.round(TW*a))}
+      {const bx=$("pzBox"),bw=bx&&bx.clientWidth||400,bh=bx&&bx.clientHeight||560,a=bh/bw;TW=Math.round(Math.sqrt(N*7400/a));TH=Math.round(TW*a);const mw=COLS*S+100,mh=ROWS*S+100;if(TW<mw){TW=mw;TH=Math.max(TH,Math.round(TW*a))}if(TH<mh){TH=mh;TW=Math.max(TW,Math.round(TH/a))}}
       // 모서리 모양(홈/튀어나옴) 랜덤 생성
       const mk=()=>{const s=rnd()<.5?-1:1,c=.5+(rnd()-.5)*.1,D=(.2+rnd()*.07)*s,W=.1+rnd()*.03,n=.055+rnd()*.02,a=c-n-.07,b=c+n+.07,w=W+.03;
         return [[[0,0],[a/3,0],[2*a/3,0],[a,0]],[[a,0],[c-n,0],[c-n,.2*D],[c-n,.45*D]],[[c-n,.45*D],[c-n,.6*D],[c-w,.6*D],[c-w,.78*D]],[[c-w,.78*D],[c-w,.95*D],[c-W*.5,D],[c,D]],
@@ -373,10 +379,10 @@ function puzzle(){
         const bw=(sg,m)=>{for(let k=sg.length-1;k>=0;k--){const s=sg[k],a=m(s[2]),b=m(s[1]),d=m(s[0]);p.bezierCurveTo(a[0],a[1],b[0],b[1],d[0],d[1])}};
         fw(HE[r][c],q=>[q[0]*S,q[1]*S]);fw(VE[r][c+1],q=>[S+q[1]*S,q[0]*S]);bw(HE[r+1][c],q=>[q[0]*S,S+q[1]*S]);bw(VE[r][c],q=>[q[1]*S,q[0]*S]);
         p.closePath();return p};
-      const paths=[],cvs=[],X=new Array(N),Y=new Array(N);
+      const paths=[],cvs=[],X=new Array(N),Y=new Array(N),qx=img.naturalWidth/(COLS*S),qy=img.naturalHeight/(ROWS*S),Q=Math.max(1,Math.min(2,qx));
       for(let i=0;i<N;i++){const r=Math.floor(i/COLS),c=i%COLS,p=mkPath(r,c);paths.push(p);
-        const k=document.createElement("canvas");k.width=k.height=CS;const g=k.getContext("2d");
-        g.save();g.translate(PAD,PAD);g.clip(p);g.drawImage(img,c*S-PAD,r*S-PAD,CS,CS,-PAD,-PAD,CS,CS);g.lineWidth=3;g.strokeStyle="rgba(0,0,0,.2)";g.stroke(p);g.restore();
+        const k=document.createElement("canvas");k.width=k.height=Math.ceil(CS*Q);const g=k.getContext("2d");g.scale(Q,Q);
+        g.save();g.translate(PAD,PAD);g.clip(p);g.drawImage(img,(c*S-PAD)*qx,(r*S-PAD)*qy,CS*qx,CS*qy,-PAD,-PAD,CS,CS);g.lineWidth=3;g.strokeStyle="rgba(0,0,0,.2)";g.stroke(p);g.restore();
         g.save();g.translate(PAD,PAD);g.lineWidth=1;g.strokeStyle="rgba(0,0,0,.38)";g.stroke(p);g.restore();cvs.push(k)}
       const rc=i=>[Math.floor(i/COLS),i%COLS];
       const nbr=i=>{const [r,c]=rc(i),o=[];if(r>0)o.push(i-COLS);if(r<ROWS-1)o.push(i+COLS);if(c>0)o.push(i-1);if(c<COLS-1)o.push(i+1);return o};
@@ -414,10 +420,10 @@ function puzzle(){
         ctx.fillStyle="#3d5d38";ctx.fillRect(0,0,TW,TH);
         const x0=-vx/vs-CS,y0=-vy/vs-CS,x1=(cw-vx)/vs,y1=(ch-vy)/vs,vis=i=>X[i]>x0&&X[i]<x1&&Y[i]>y0&&Y[i]<y1;
         const dg=drag?gid[drag.i]:-1;
-        for(const i of zo)if(gid[i]!==dg&&vis(i))ctx.drawImage(cvs[i],X[i]-PAD,Y[i]-PAD);
+        for(const i of zo)if(gid[i]!==dg&&vis(i))ctx.drawImage(cvs[i],X[i]-PAD,Y[i]-PAD,CS,CS);
         if(dg>=0){const m=grp.get(dg);
-          ctx.save();ctx.shadowColor="rgba(0,0,0,.55)";ctx.shadowBlur=14;ctx.shadowOffsetY=6;for(const i of m)if(vis(i))ctx.drawImage(cvs[i],X[i]-PAD,Y[i]-PAD);ctx.restore();
-          if(m.length>1)for(const i of m)if(vis(i))ctx.drawImage(cvs[i],X[i]-PAD,Y[i]-PAD)}
+          ctx.save();ctx.shadowColor="rgba(0,0,0,.55)";ctx.shadowBlur=14;ctx.shadowOffsetY=6;for(const i of m)if(vis(i))ctx.drawImage(cvs[i],X[i]-PAD,Y[i]-PAD,CS,CS);ctx.restore();
+          if(m.length>1)for(const i of m)if(vis(i))ctx.drawImage(cvs[i],X[i]-PAD,Y[i]-PAD,CS,CS)}
         const now=performance.now();flashes=flashes.filter(f=>now-f.t<450);
         for(const f of flashes){const a=1-(now-f.t)/450;ctx.save();ctx.globalAlpha=a*.55;ctx.fillStyle="#fff";for(const i of f.m){ctx.save();ctx.translate(X[i],Y[i]);ctx.fill(paths[i]);ctx.restore()}ctx.restore()}
         if(flashes.length)dirty();
@@ -452,7 +458,7 @@ function puzzle(){
       function finish(){
         finished=true;const sec=Math.max(1,Math.round((performance.now()-T0)/1000));
         const b=bbox(grp.values().next().value);fitRect(b[0]-20,b[1]-20,b[2]-b[0]+40,b[3]-b[1]+40);
-        $("pzClr").classList.remove("hide");$("pzCt").innerHTML="400피스 완성! 걸린 시간 <b>"+fmt(sec)+"</b>";$("pzNew").onclick=()=>start("puzzle");$("pzHm").onclick=home;window.scrollTo(0,0);
+        $("pzClr").classList.remove("hide");$("pzCt").innerHTML=cfg.lab+" 완성! 걸린 시간 <b>"+fmt(sec)+"</b>";$("pzNew").onclick=()=>start("puzzle");$("pzHm").onclick=home;window.scrollTo(0,0);
       }
       // 포인터 조작
       const ptr=new Map(),pos=e=>{const r=cv.getBoundingClientRect();return{x:e.clientX-r.left,y:e.clientY-r.top}};
@@ -558,7 +564,7 @@ function quiz(g,items,sec){
     };
     if(it.o)document.querySelectorAll(".opts button").forEach(b=>b.onclick=()=>fin(it.ok(+b.dataset.k)));
     else{$("ok").onclick=()=>{const v=norm($("in").value);if(v)fin(it.ok(v))};$("pass").onclick=()=>fin(false,"패스");if($("hb"))$("hb").onclick=()=>{$("hn").textContent=it.hint;$("hb").disabled=true};$("in").onkeydown=e=>{if(e.key==="Enter")$("ok").click()};$("in").focus()}
-    clearInterval(tm);tm=setInterval(()=>{const l=Math.max(0,sec-(Date.now()-t0)/1000);$("tt").textContent=Math.ceil(l);$("tb").style.width=l/sec*100+"%";const pq=$("pt");if(pq){pq.textContent="이번 문제 +"+(Math.round(ptsAt(l)*10)/10)+"점"+(l<10?" ▼":"");pq.className=l<10?"bad":"mut"}if(l<=0)fin(false,"시간 초과")},200);
+    clearInterval(tm);tm=setInterval(()=>{const l=Math.max(0,sec-(Date.now()-t0)/1000);$("tt").textContent=Math.ceil(l);$("tb").style.width=l/sec*100+"%";const pq=$("pt");if(pq){pq.textContent="이번 문제 +"+(Math.round(ptsAt(l)*10)/10)+"점"+(l<10?" ▼":"");pq.style.color=l<10?"var(--bad)":""}if(l<=0)fin(false,"시간 초과")},200);
   }
   view("");show();
 }
@@ -585,7 +591,7 @@ function hint(){
   function show(){
     if(i>=items.length)return endGame("hint",sc*100/96,`${hits} / ${items.length} 정답`);
     const s=items[i];let n=1,done=false,fn=()=>{};const t0=Date.now();const hp=()=>{const l=Math.max(0,15-(Date.now()-t0)/1000);return Math.max(1,[12,8,4][n-1]-(l<10?Math.floor(10-l)+1:0))};
-    clearInterval(tm);tm=setInterval(()=>{const l=Math.max(0,15-(Date.now()-t0)/1000);const e=$("tt");if(e){e.textContent=Math.ceil(l);$("tb").style.width=l/15*100+"%";const q=$("pt");if(q){q.textContent="지금 정답이면 +"+hp()+"점"+(l<10?" ▼":"");q.className=l<10?"bad":"mut"}}if(l<=0)fn(false)},200);
+    clearInterval(tm);tm=setInterval(()=>{const l=Math.max(0,15-(Date.now()-t0)/1000);const e=$("tt");if(e){e.textContent=Math.ceil(l);$("tb").style.width=l/15*100+"%";const q=$("pt");if(q){q.textContent="지금 정답이면 +"+hp()+"점"+(l<10?" ▼":"");q.style.color=l<10?"var(--bad)":""}}if(l<=0)fn(false)},200);
     const draw=()=>{$("stage").innerHTML=`<div class="mut">${i+1} / ${items.length} · 점수 ${sc}</div><div class="big" id="tt">15</div><div class="bar"><i id="tb"></i></div><div class="q">이 곡은 무엇일까요?</div>
     <ol>${s.h.slice(0,n).map(h=>`<li>${h}</li>`).join("")}</ol><div class="mut" id="pt" style="font-weight:700">지금 정답이면 +${hp()}점</div>
     <input type="text" id="in" autocomplete="off" placeholder="제목 입력" style="margin-top:8px"><div class="row"><button id="ok">제출</button><button class="g" id="more" ${n>=3?"disabled":""}>힌트 더 보기</button><button class="g" id="pass">패스</button></div><div id="fb" style="margin-top:10px;font-weight:700"></div>`;
@@ -628,7 +634,7 @@ function order(){
     const mode=modes[r],{set:items,desc,q}=build(mode);
     const set=sh(items),want=items.slice().sort((x,y)=>desc?y.k-x.k:x.k-y.k);
     let sel=[],done=false;const t0=Date.now();
-    $("stage").innerHTML=`<div class="mut">라운드 ${r+1} / 5 · 점수 ${sc}</div><div class="big" id="tt">15</div><div id="pt" class="mut" style="text-align:center;font-weight:700">이번 라운드 최대 +20점</div><div class="bar"><i id="tb"></i></div><div class="q">${q}</div><div class="mut" style="text-align:center">다시 누르면 선택이 취소돼요 · 맞힌 자리마다 5점</div><div class="opts" id="ob"></div><div class="row"><button id="sb" disabled>제출</button><button class="g" id="rb">초기화</button></div><div id="fb" style="margin-top:10px;font-weight:700"></div>`;
+    $("stage").innerHTML=`<div class="mut">라운드 ${r+1} / 5 · 점수 ${sc}</div><div class="big" id="tt">15</div><div class="bar"><i id="tb"></i></div><div class="q">${q}</div><div class="mut" style="text-align:center">다시 누르면 선택이 취소돼요 · 맞힌 자리마다 5점</div><div class="opts" id="ob"></div><div class="row"><button id="sb" disabled>제출</button><button class="g" id="rb">초기화</button></div><div id="fb" style="margin-top:10px;font-weight:700"></div>`;
     const draw=()=>{
       $("ob").innerHTML="";
       set.forEach((x,i)=>{const b=document.createElement("button");const p=sel.indexOf(i);
@@ -639,7 +645,7 @@ function order(){
     const submit=(timeout)=>{
       if(done)return;done=true;clearInterval(tm);
       const ok=want.map((w,pos)=>sel[pos]!==undefined&&set[sel[pos]]===w);
-      const n=ok.filter(Boolean).length,lv=timeout?0:Math.max(0,15-(Date.now()-t0)/1000),dec=lv<10?Math.floor(10-lv)+1:0,gain=n?Math.max(1,n*5-dec):0;sc+=gain;
+      const n=ok.filter(Boolean).length,gain=n*5;sc+=gain;
       draw();$("sb").disabled=true;$("rb").disabled=true;
       $("fb").innerHTML=`<div>${timeout?'<span class="bad">시간 초과</span> · ':''}${n} / 4 자리 정답 · +${gain}점</div>`
         +want.map((w,pos)=>`<div class="${ok[pos]?"ok":"bad"}" style="font-weight:400">${pos+1}번 ${ok[pos]?"✓":"✗"} ${w.t}${w.tag?` <span class="mut">(${w.tag})</span>`:""}${ok[pos]?"":sel[pos]!==undefined?` <span class="mut">· 내 선택: ${set[sel[pos]].t}</span>`:` <span class="mut">· 선택 안 함</span>`}</div>`).join("");
@@ -650,7 +656,7 @@ function order(){
     $("sb").onclick=()=>submit(false);
     $("rb").onclick=()=>{if(!done){sel=[];draw()}};
     draw();
-    tm=setInterval(()=>{const l=Math.max(0,15-(Date.now()-t0)/1000);$("tt").textContent=Math.ceil(l);$("tb").style.width=l/15*100+"%";const q=$("pt");if(q){const d=l<10?Math.floor(10-l)+1:0;q.textContent="이번 라운드 최대 +"+Math.max(1,20-d)+"점"+(l<10?" ▼":"");q.className=l<10?"bad":"mut"}if(l<=0)submit(true)},200);
+    tm=setInterval(()=>{const l=Math.max(0,15-(Date.now()-t0)/1000);$("tt").textContent=Math.ceil(l);$("tb").style.width=l/15*100+"%";if(l<=0)submit(true)},200);
   }
   view("");round();
 }
