@@ -95,7 +95,7 @@ a.yt{display:inline-flex;align-items:center;justify-content:center;width:48px;he
 #pzOv{position:absolute;inset:0;background:rgba(0,0,0,.82);display:flex;align-items:center;justify-content:center;padding:10px}#pzOv.hide{display:none}#pzOv img{max-width:100%;max-height:100%;border-radius:8px}
 #lb table{table-layout:fixed}#lb th,#lb td,#lb td.n,#lb th.n{width:33.33%;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #pzBtns button{padding:6px 8px;font-size:13px;min-height:38px;flex:1 1 0;min-width:0}
-body.pz main{max-width:min(980px,100%)}body.pz main>.s{display:none}body.pz #stage{padding:8px}body.pz #pzBtns{margin:0 0 8px!important}
+body.pz main{max-width:min(980px,100%)}body.pz main>.s{display:none}body.pz #stage{padding:8px}body.pz #pzBtns{margin:0 0 8px!important}#pzBtns button{white-space:nowrap;padding-left:4px;padding-right:4px}
 #pzPick .mbox{background:#fff;border-color:#e2e0d8;text-align:center}:root[data-theme="dark"] #pzPick .mbox{background:var(--card);border-color:var(--bd)}.pkb{display:flex;flex-direction:column;gap:8px}.pkb button{min-height:50px;font-size:17px}.pkb small{font-size:13px;opacity:.75;margin-left:4px}
 #exitModal .mbox{background:#fff;border-color:#e2e0d8;text-align:center}:root[data-theme="dark"] #exitModal .mbox{background:var(--card);border-color:var(--bd)}#exitModal p{font-size:17px;line-height:1.6;margin:4px 0 16px}#exitModal .row{justify-content:center;gap:10px}#exitModal button{flex:1;min-height:46px}
 </style>
@@ -132,6 +132,31 @@ body.pz main{max-width:min(980px,100%)}body.pz main>.s{display:none}body.pz #sta
 <section id="stage" class="card hide"></section>
 </main>
 <script>
+/* ===== 퍼즐 사진(Google Drive) 설정 =====
+   이 폴더(링크가 있는 모든 사용자 · 뷰어)에 넣은 사진 중 한 장이 무작위로 퍼즐이 돼요.
+   불러오지 못하면 페이지에 들어 있는 기본 사진을 써요. */
+const DRIVE_API_KEY="AIzaSyCpyFv4tOYaMIVVJD9aejtdAvZRcPjfHiA";
+const DRIVE_FOLDER_ID="1noaFN6crIGhkFpB3N6PS3BH22b1moBk0";
+function loadImg(src){return new Promise((res,rej)=>{const i=new Image();i.onload=()=>res(i);i.onerror=rej;i.src=src})}
+async function fetchT(url,ms){const c=new AbortController(),t=setTimeout(()=>c.abort(),ms);try{const r=await fetch(url,{signal:c.signal});if(!r.ok)throw new Error(r.status);return r}finally{clearTimeout(t)}}
+async function loadPuzzlePhoto(){
+  const builtin=async()=>{const u=PUZ_IMGS[Math.floor(Math.random()*PUZ_IMGS.length)];return{img:await loadImg(u),url:u}};
+  if(!DRIVE_API_KEY||!DRIVE_FOLDER_ID)return builtin();
+  let files=[];
+  try{
+    const q=encodeURIComponent("'"+DRIVE_FOLDER_ID+"' in parents and mimeType contains 'image/' and trashed=false");
+    const r=await fetchT("https://www.googleapis.com/drive/v3/files?q="+q+"&fields=files(id,mimeType)&pageSize=1000&key="+DRIVE_API_KEY,8000);
+    files=((await r.json()).files||[]);
+  }catch(e){console.warn("드라이브 목록을 불러오지 못했어요",e)}
+  // 무작위 순서로 시도: 원본 → 안 되면 구글이 변환한 큰 미리보기(HEIC 등)
+  for(let k=files.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[files[k],files[j]]=[files[j],files[k]]}
+  for(const f of files.slice(0,3)){
+    try{const r=await fetchT("https://www.googleapis.com/drive/v3/files/"+f.id+"?alt=media&key="+DRIVE_API_KEY,20000);
+      const u=URL.createObjectURL(await r.blob());return{img:await loadImg(u),url:u}}catch(e){}
+    try{const u="https://drive.google.com/thumbnail?id="+f.id+"&sz=w2000";return{img:await loadImg(u),url:u}}catch(e){}
+  }
+  return builtin();
+}
 /* ===== 순위표(Firebase) 설정 =====
    Firebase 콘솔에서 만든 웹 앱 설정을 아래 null 대신 붙여넣으세요. 예:
    const FIREBASE_CONFIG={apiKey:"...",authDomain:"...",projectId:"...",appId:"..."};
@@ -349,22 +374,29 @@ function puzzle(){
   try{localStorage.removeItem("wh-pz")}catch(e){}
   const fmt=s=>{const h=Math.floor(s/3600),m=Math.floor(s/60)%60,x=s%60;return (h?h+"시간 ":"")+(h||m?m+"분 ":"")+x+"초"};
   view(`<b>퍼즐 맞추기</b><div class="mut" style="margin-top:6px">조각 수를 골라 주세요</div>`);
-  const pk=$("pzPick"),pick=(c,r,lab)=>{pk.classList.add("hide");run({COLS:c,ROWS:r,lab})};
+  const pk=$("pzPick"),pick=(T,lab)=>{pk.classList.add("hide");run({T,lab})};
   pk.classList.remove("hide");setTimeout(()=>$("pk1").focus(),30);
-  $("pk1").onclick=()=>pick(8,13,"100피스");$("pk3").onclick=()=>pick(14,22,"300피스");$("pk5").onclick=()=>pick(18,28,"500피스");
+  $("pk1").onclick=()=>pick(100,"100피스");$("pk3").onclick=()=>pick(300,"300피스");$("pk5").onclick=()=>pick(500,"500피스");
   $("pkX").onclick=()=>{pk.classList.add("hide");home()};
   function run(cfg){
-    const sv=null,COLS=cfg.COLS,ROWS=cfg.ROWS,S=60,PAD=20,CS=S+PAD*2,N=COLS*ROWS;let TW=1500,TH=1950;
+    const sv=null,S=60,PAD=20,CS=S+PAD*2;let COLS=0,ROWS=0,N=0,PURL="",TW=1500,TH=1950;
     const seed=sv?(sv.seed>>>0):((Math.random()*4294967296)>>>0);
-    const ii=sv?((sv.img|0)%PUZ_IMGS.length):Math.floor(Math.random()*PUZ_IMGS.length);
     let rs=seed;const rnd=()=>{rs=rs+0x6D2B79F5|0;let t=Math.imul(rs^rs>>>15,1|rs);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296};
     view(`<div id="pzClr" class="hide" style="text-align:center"><div style="font-size:36px;font-weight:800;letter-spacing:2px;color:var(--ok)">🎉 CLEAR! 🎉</div><div class="mut" id="pzCt"></div><div class="row" style="justify-content:center"><button id="pzNew">새 퍼즐</button><button class="g" id="pzHm">홈으로</button></div></div>
     <div class="row" id="pzBtns" style="margin:0 0 8px;gap:4px;flex-wrap:nowrap"><button class="g" id="pzZi" aria-label="확대">＋</button><button class="g" id="pzZo" aria-label="축소">－</button><button class="g" id="pzAll">전체</button><button class="g" id="pzPv">원본</button><button class="g" id="pzTd">정리</button></div>
-    <div id="pzBox"><canvas id="pzc"></canvas><div id="pzOv" class="hide"></div></div>
+    <div id="pzBox"><canvas id="pzc"></canvas><div id="pzLd" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;color:#e8f0e0;font-weight:700">사진 불러오는 중…</div><div id="pzOv" class="hide"></div></div>
     <div class="mut" style="margin-top:6px">맞는 조각끼리 대면 붙어요 · 두 손가락(휠)으로 확대</div>`);
     document.body.classList.add("pz");
-    const img=new Image();img.onload=go;img.src=PUZ_IMGS[ii];
-    function go(){
+    loadPuzzlePhoto().then(p=>{if($("pzBox"))go(p.img,p.url)});
+    function go(img,url){
+      PURL=url;{const l=$("pzLd");if(l)l.remove()}
+      // 사진 비율에 맞춰 가로·세로 조각 수 정하기 (조각은 정사각형)
+      const iw=img.naturalWidth||img.width,ih=img.naturalHeight||img.height,ar=iw/ih;
+      COLS=Math.max(3,Math.round(Math.sqrt(cfg.T*ar)));ROWS=Math.max(3,Math.round(cfg.T/COLS));N=COLS*ROWS;
+      // 비율이 남는 부분은 가운데 기준으로 잘라내고, 너무 큰 사진은 줄이기
+      const rt=COLS/ROWS;let sx=0,sy=0,sw=iw,sh=ih;if(ar>rt){sw=ih*rt;sx=(iw-sw)/2}else{sh=iw/rt;sy=(ih-sh)/2}
+      const kk=Math.min(1,COLS*S*2/sw),src=document.createElement("canvas");src.width=Math.max(1,Math.round(sw*kk));src.height=Math.max(1,Math.round(sh*kk));
+      src.getContext("2d").drawImage(img,sx,sy,sw,sh,0,0,src.width,src.height);
       {const bx=$("pzBox"),bw=bx&&bx.clientWidth||400,bh=bx&&bx.clientHeight||560,a=bh/bw;TW=Math.round(Math.sqrt(N*7400/a));TH=Math.round(TW*a);const mw=COLS*S+100,mh=ROWS*S+100;if(TW<mw){TW=mw;TH=Math.max(TH,Math.round(TW*a))}if(TH<mh){TH=mh;TW=Math.max(TW,Math.round(TH/a))}}
       // 모서리 모양(홈/튀어나옴) 랜덤 생성
       const mk=()=>{const s=rnd()<.5?-1:1,c=.5+(rnd()-.5)*.1,D=(.2+rnd()*.07)*s,W=.1+rnd()*.03,n=.055+rnd()*.02,a=c-n-.07,b=c+n+.07,w=W+.03;
@@ -379,10 +411,10 @@ function puzzle(){
         const bw=(sg,m)=>{for(let k=sg.length-1;k>=0;k--){const s=sg[k],a=m(s[2]),b=m(s[1]),d=m(s[0]);p.bezierCurveTo(a[0],a[1],b[0],b[1],d[0],d[1])}};
         fw(HE[r][c],q=>[q[0]*S,q[1]*S]);fw(VE[r][c+1],q=>[S+q[1]*S,q[0]*S]);bw(HE[r+1][c],q=>[q[0]*S,S+q[1]*S]);bw(VE[r][c],q=>[q[1]*S,q[0]*S]);
         p.closePath();return p};
-      const paths=[],cvs=[],X=new Array(N),Y=new Array(N),qx=img.naturalWidth/(COLS*S),qy=img.naturalHeight/(ROWS*S),Q=Math.max(1,Math.min(2,qx));
+      const paths=[],cvs=[],X=new Array(N),Y=new Array(N),qx=src.width/(COLS*S),qy=src.height/(ROWS*S),Q=Math.max(1,Math.min(2,qx));
       for(let i=0;i<N;i++){const r=Math.floor(i/COLS),c=i%COLS,p=mkPath(r,c);paths.push(p);
         const k=document.createElement("canvas");k.width=k.height=Math.ceil(CS*Q);const g=k.getContext("2d");g.scale(Q,Q);
-        g.save();g.translate(PAD,PAD);g.clip(p);g.drawImage(img,(c*S-PAD)*qx,(r*S-PAD)*qy,CS*qx,CS*qy,-PAD,-PAD,CS,CS);g.lineWidth=3;g.strokeStyle="rgba(0,0,0,.2)";g.stroke(p);g.restore();
+        g.save();g.translate(PAD,PAD);g.clip(p);g.drawImage(src,(c*S-PAD)*qx,(r*S-PAD)*qy,CS*qx,CS*qy,-PAD,-PAD,CS,CS);g.lineWidth=3;g.strokeStyle="rgba(0,0,0,.2)";g.stroke(p);g.restore();
         g.save();g.translate(PAD,PAD);g.lineWidth=1;g.strokeStyle="rgba(0,0,0,.38)";g.stroke(p);g.restore();cvs.push(k)}
       const rc=i=>[Math.floor(i/COLS),i%COLS];
       const nbr=i=>{const [r,c]=rc(i),o=[];if(r>0)o.push(i-COLS);if(r<ROWS-1)o.push(i+COLS);if(c>0)o.push(i-1);if(c<COLS-1)o.push(i+1);return o};
@@ -487,18 +519,23 @@ function puzzle(){
       $("pzAll").onclick=()=>fitRect(0,0,TW,TH);
       const pvOff=()=>{$("pzOv").classList.add("hide");$("pzPv").textContent="원본"};
       $("pzPv").onclick=()=>{const o=$("pzOv");if(!o.classList.contains("hide")){pvOff();return}
-        if(!o.firstChild)o.innerHTML='<img alt="완성 그림" src="'+PUZ_IMGS[ii]+'">';o.classList.remove("hide");$("pzPv").textContent="원본 끄기";o.onclick=pvOff};
+        if(!o.firstChild)o.innerHTML='<img alt="완성 그림" src="'+PURL+'">';o.classList.remove("hide");$("pzPv").textContent="원본 끄기";o.onclick=pvOff};
       $("pzTd").onclick=()=>{if(finished)return;
         // 낱개 조각만 빈 자리에 가지런히 (테두리 조각 먼저)
         const ids=zo.filter(i=>grp.get(gid[i]).length===1),edge=i=>{const [r,c]=rc(i);return r===0||r===ROWS-1||c===0||c===COLS-1?0:1},key={};ids.forEach(i=>key[i]=edge(i)+rnd()*.9);
         ids.sort((a,b)=>key[a]-key[b]);
-        const boxes=[...grp.values()].filter(m=>m.length>1).map(bbox),G=S+12,cells=[];
-        for(let y=10;y+S<=TH;y+=G)for(let x=10;x+S<=TW;x+=G){if(boxes.some(b=>x+S>b[0]-8&&x<b[2]+8&&y+S>b[1]-8&&y<b[3]+8))continue;cells.push([x,y])}
-        if(!cells.length)return;
+        if(!ids.length)return;
+        // 칸 간격: 튀어나온 부분끼리 닿지 않도록 넉넉하게
+        const boxes=[...grp.values()].filter(m=>m.length>1).map(bbox),G=S+38,M=22,GM=24;
+        const mkCells=()=>{const c=[];for(let y=M;y+S<=TH-M;y+=G)for(let x=M;x+S<=TW-M;x+=G){if(boxes.some(b=>x+S>b[0]-GM&&x<b[2]+GM&&y+S>b[1]-GM&&y<b[3]+GM))continue;c.push([x,y])}return c};
+        let cells=mkCells(),guard=0;
+        // 칸이 모자라면 판을 넓혀서 모든 조각이 각자 한 칸씩 차지하게
+        while(cells.length<ids.length&&guard++<60){TW=Math.round(TW*1.06);TH=Math.round(TH*1.06);cells=mkCells()}
+        if(cells.length<ids.length)return;
         const st=ids.map(i=>[X[i],Y[i]]),t0=performance.now(),set=new Set(ids);
         zo=zo.filter(j=>!set.has(j)).concat(ids);
         const step=()=>{const k=Math.min(1,(performance.now()-t0)/380),e=1-(1-k)*(1-k);
-          ids.forEach((i,n)=>{const c=cells[n]||cells[cells.length-1];X[i]=st[n][0]+(c[0]-st[n][0])*e;Y[i]=st[n][1]+(c[1]-st[n][1])*e});
+          ids.forEach((i,n)=>{const c=cells[n];X[i]=st[n][0]+(c[0]-st[n][0])*e;Y[i]=st[n][1]+(c[1]-st[n][1])*e});
           draw();if(k<1&&cv.isConnected)requestAnimationFrame(step);else{save();fitRect(0,0,TW,TH)}};
         step();
       };
